@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Own Case - Casify</title>
+    <link rel="stylesheet" href="create-style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Casify</div>
+        <nav>
+            <ul>
+                <li><a href="cart.html"><img src="assets/cart-icon.png" alt="Cart"></a></li>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="orders.html">Past Orders</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="create-case">
+        <h1>Create Your Own Phone Case</h1>
+        <p>Choose how you want to customize your case.</p>
+        
+        <div class="custom-options">
+            <div class="upload-option">
+                <h2>Upload Your Own Image</h2>
+                <p>Upload an image to be printed on your case.</p>
+                <input type="file" id="image-upload" accept="image/*">
+                <button>Upload & Preview</button>
+            </div>
+            
+            <div class="ai-option">
+                <h2>AI Image Generation</h2>
+                <p>Describe an image, and AI will generate it for your case.</p>
+                <textarea id="ai-description" placeholder="Describe your image..."></textarea>
+                <button>Generate Image</button>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Casify. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
