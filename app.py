@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, Image
 from flask_cors import CORS
 import supabase
 import os
