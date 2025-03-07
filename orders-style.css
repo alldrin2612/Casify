@@ -23,9 +23,14 @@ header {
 }
 
 .logo {
-    font-size: 28px;
-    font-weight: bold;
-    font-family: 'Pacifico', cursive;
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    width: 110px; /* Adjust this size as needed */
+    height: auto;
+    max-height: 70px;
 }
 
 nav ul {
