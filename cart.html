@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cart - Casify</title>
+    <link rel="stylesheet" href="cart-style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Casify</div>
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="create.html">Create Your Own Case</a></li>
+                <li><a href="orders.html">Past Orders</a></li>
+                <li><a href="login.html">Login</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="cart">
+        <h1>Your Shopping Cart</h1>
+        <div class="cart-container">
+            <p id="empty-cart-message">Your cart is empty.</p>
+            <div class="cart-items">
+                <!-- Cart items will be dynamically added here -->
+            </div>
+            <div class="cart-summary">
+                <h2>Total: $<span id="total-price">0.00</span></h2>
+                <a href="checkout.html" class="checkout-btn">Proceed to Checkout</a>
+            </div>
+        </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Casify. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>
