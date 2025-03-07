@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login / Signup - Casify</title>
+    <link rel="stylesheet" href="login-signup-style.css">
+</head>
+<body>
+    <header>
+        <div class="logo">Casify</div> 
+        <nav>
+            <ul>
+                <li><a href="index.html">Home</a></li>
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="login-signup-container">
+        <div class="form-box" id="login-box">
+            <h2>Login</h2>
+            <form>
+                <input type="text" placeholder="Username" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit" class="btn">Login</button>
+                <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
+            </form>
+        </div>
+        
+        <div class="form-box hidden" id="signup-box">
+            <h2>Sign Up</h2>
+            <form>
+                <input type="text" placeholder="First Name" required>
+                <input type="text" placeholder="Last Name" required>
+                <input type="text" placeholder="Username" required>
+                <input type="password" placeholder="Password" required>
+                <button type="submit" class="btn">Sign Up</button>
+                <p>Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
+            </form>
+        </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Casify. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        function switchToSignup() {
+            document.getElementById("login-box").classList.add("hidden");
+            document.getElementById("signup-box").classList.remove("hidden");
+        }
+        function switchToLogin() {
+            document.getElementById("signup-box").classList.add("hidden");
+            document.getElementById("login-box").classList.remove("hidden");
+        }
+    </script>
+</body>
+</html>
