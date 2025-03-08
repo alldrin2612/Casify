@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Own Case - Casify</title>
     <link rel="stylesheet" href="create-style.css">
+    <script src="script.js" defer></script>
 </head>
 <body>
     <header>
@@ -30,15 +31,21 @@
                 <h2>Upload Your Own Image</h2>
                 <p>Upload an image to be printed on your case.</p>
                 <input type="file" id="image-upload" accept="image/*">
-                <button>Upload & Preview</button>
+                <button onclick="uploadImage()">Upload & Preview</button>
             </div>
             
             <div class="ai-option">
                 <h2>AI Image Generation</h2>
                 <p>Describe an image, and AI will generate it for your case.</p>
                 <textarea id="ai-description" placeholder="Describe your image..."></textarea>
-                <button>Generate Image</button>
+                <button onclick="generateAIImage()">Generate Image</button>
             </div>
+        </div>
+        
+        <div class="preview-section">
+            <h2>Preview Your Custom Case</h2>
+            <img id="custom-case-preview" src="assets/templatewhite.png" alt="Custom Case Preview">
+            <button onclick="addCustomCaseToCart()">Add to Cart - $30.00</button>
         </div>
     </section>
     
