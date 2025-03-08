@@ -44,6 +44,31 @@ def view_cart():
     response = supabase_client.table('cart').select('*').eq('user_id', user_id).execute()
     return jsonify(response['data'])
 
+# Remove from Cart API
+@app.route('/remove-from-cart', methods=['POST'])
+def remove_from_cart():
+    if 'user' not in session:
+        return jsonify({"error": "User not logged in"}), 401
+    
+    data = request.json
+    user_id = session['user']
+    case_id = data.get('case_id')
+    
+    response = supabase_client.table('cart').delete().eq('user_id', user_id).eq('case_id', case_id).execute()
+    return jsonify({"message": "Item removed from cart", "data": response})
+
+# Get Total Price API
+@app.route('/cart-total', methods=['GET'])
+def cart_total():
+    if 'user' not in session:
+        return jsonify({"error": "User not logged in"}), 401
+    
+    user_id = session['user']
+    response = supabase_client.table('cart').select('price').eq('user_id', user_id).execute()
+    total_price = sum(item['price'] for item in response['data'])
+    
+    return jsonify({"total": total_price})
+
 # View Past Orders API
 @app.route('/orders', methods=['GET'])
 def view_orders():
