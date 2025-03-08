@@ -13,6 +13,57 @@ SUPABASE_URL = "your-supabase-url"
 SUPABASE_KEY = "your-supabase-key"
 supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# User Signup API
+@app.route('/signup', methods=['POST'])
+def signup():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    
+    response = supabase_client.auth.sign_up({
+        "email": username,
+        "password": password
+    })
+    
+    if 'error' in response:
+        return jsonify({"error": response['error']}), 400
+    
+    user_id = response['user']['id']
+    supabase_client.table('users').insert({
+        "id": user_id,
+        "first_name": first_name,
+        "last_name": last_name,
+        "username": username
+    }).execute()
+    
+    return jsonify({"message": "User registered successfully!"})
+
+# User Login API
+@app.route('/login', methods=['POST'])
+def login():
+    data = request.json
+    username = data.get('username')
+    password = data.get('password')
+    
+    response = supabase_client.auth.sign_in_with_password({
+        "email": username,
+        "password": password
+    })
+    
+    if 'error' in response:
+        return jsonify({"error": "Invalid credentials"}), 401
+    
+    session['user'] = response['user']['id']
+    return jsonify({"message": "Login successful!", "user_id": response['user']['id']})
+
+# User Logout API
+@app.route('/logout', methods=['POST'])
+def logout():
+    session.pop('user', None)
+    return jsonify({"message": "Logout successful!"})
+
 # Add to Cart API
 @app.route('/add-to-cart', methods=['POST'])
 def add_to_cart():
@@ -78,6 +129,29 @@ def view_orders():
     user_id = session['user']
     response = supabase_client.table('orders').select('*').eq('user_id', user_id).execute()
     return jsonify(response['data'])
+
+# Place Order (Checkout) API
+@app.route('/checkout', methods=['POST'])
+def checkout():
+    if 'user' not in session:
+        return jsonify({"error": "User not logged in"}), 401
+    
+    user_id = session['user']
+    cart_items = supabase_client.table('cart').select('*').eq('user_id', user_id).execute()['data']
+    
+    if not cart_items:
+        return jsonify({"error": "Cart is empty"}), 400
+    
+    for item in cart_items:
+        supabase_client.table('orders').insert({
+            "user_id": user_id,
+            "case_id": item.get('case_id'),
+            "case_name": item.get('case_name'),
+            "price": item.get('price')
+        }).execute()
+    
+    supabase_client.table('cart').delete().eq('user_id', user_id).execute()
+    return jsonify({"message": "Order placed successfully!"})
 
 # Upload Custom Image API
 @app.route('/upload-image', methods=['POST'])
