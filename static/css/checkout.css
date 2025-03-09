@@ -37,6 +37,7 @@ nav ul {
     list-style: none;
     display: flex;
     align-items: center;
+    justify-content: flex-end;
 }
 
 nav ul li {
@@ -49,43 +50,25 @@ nav ul li a {
     font-size: 18px;
 }
 
-nav ul li a img {
-    width: 24px;
-    height: 24px;
-}
-
-/* Create Case Section */
-.create-case {
-    padding: 60px 10%;
-    background: #e3f2fd;
+/* Checkout Section */
+.checkout {
+    padding: 50px;
+    background: #00bfff68;
     text-align: center;
 }
 
-.create-case h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
-}
-
-.create-case p {
-    font-size: 18px;
-    color: #666;
+.checkout h1 {
+    font-size: 32px;
     margin-bottom: 20px;
 }
 
-.custom-options {
-    display: flex;
-    justify-content: center;
-    gap: 40px;
-    margin-top: 30px;
-}
-
-.upload-option, .ai-option {
+.checkout-container {
     background: #fff;
     padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    width: 45%;
-    text-align: center;
+    max-width: 500px;
+    margin: 0 auto;
 }
 
 h2 {
@@ -93,62 +76,30 @@ h2 {
     margin-bottom: 10px;
 }
 
-p {
-    font-size: 16px;
-    color: #666;
-    margin-bottom: 15px;
-}
-
-input, textarea {
+input, select {
     width: 100%;
     padding: 10px;
+    margin: 10px 0;
     border: 1px solid #ccc;
     border-radius: 5px;
-    margin-bottom: 15px;
     font-size: 16px;
 }
 
-button {
-    padding: 10px 20px;
+.checkout-btn {
+    display: block;
+    width: 100%;
+    padding: 12px;
     background: #007bff;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    font-size: 18px;
     transition: 0.3s;
-    font-size: 16px;
-    margin-top: 15px;
 }
 
-button:hover {
+.checkout-btn:hover {
     background: #0056b3;
-}
-
-/* Preview Section */
-.preview-section {
-    margin-top: 40px;
-    text-align: center;
-}
-
-.preview-section h2 {
-    font-size: 24px;
-    margin-bottom: 15px;
-}
-
-#custom-case-preview {
-    width: 150px;
-    height: auto;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    margin-bottom: 15px;
-    display: block;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-.preview-section button {
-    display: block;
-    margin: 20px auto 0 auto;
 }
 
 /* Footer */
@@ -157,5 +108,5 @@ footer {
     background: #333;
     color: #ffffff;
     text-align: center;
-    margin-top: 100px;
+    margin-top: 50px;
 }

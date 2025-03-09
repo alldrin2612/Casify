@@ -1,17 +1,50 @@
-from flask import Flask, request, jsonify, session
+from flask import Flask, request, jsonify, session, render_template
 from flask_cors import CORS
 import supabase
 from PIL import Image
+import os
+
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
 # Initialize Flask App
-app = Flask(__name__)
+app = Flask(__name__, template_folder="templates", static_folder="static")
 app.secret_key = "supersecretkey"  # Change this to a secure key
 CORS(app)
 
 # Initialize Supabase
-SUPABASE_URL = "your-supabase-url"
-SUPABASE_KEY = "your-supabase-key"
 supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
+
+# Home Page Route
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+@app.route('/index')
+def index():
+    return render_template('index.html')
+
+# Render Pages
+@app.route('/cart')
+def cart_page():
+    return render_template('cart.html')
+
+@app.route('/create')
+def create_page():
+    return render_template('create.html')
+
+@app.route('/orders')
+def orders_page():
+    return render_template('orders.html')
+
+@app.route('/login')
+def login_page():
+    return render_template('login.html')
 
 # User Signup API
 @app.route('/signup', methods=['POST'])
@@ -152,6 +185,7 @@ def checkout():
     
     supabase_client.table('cart').delete().eq('user_id', user_id).execute()
     return jsonify({"message": "Order placed successfully!"})
+    return render_template('checkout.html')
 
 # Upload Custom Image API
 @app.route('/upload-image', methods=['POST'])

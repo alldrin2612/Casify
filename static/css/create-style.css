@@ -28,31 +28,19 @@ header {
 }
 
 .logo img {
-    width: 110px; /* Adjust this size as needed */
+    width: 110px;
     height: auto;
     max-height: 70px;
-}
-
-nav {
-    flex-grow: 1;
 }
 
 nav ul {
     list-style: none;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
 }
 
 nav ul li {
     margin: 0 15px;
-}
-
-/* Center the Create Your Own Case and Past Orders */
-.center-nav {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
 }
 
 nav ul li a {
@@ -66,113 +54,108 @@ nav ul li a img {
     height: 24px;
 }
 
-/* Hero Section */
-.hero {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Create Case Section */
+.create-case {
     padding: 60px 10%;
-    background: #e3f2fd;
+    background: #00bfff68;
+    text-align: center;
 }
 
-.hero-text {
-    max-width: 50%;
-}
-
-.hero-text h1 {
+.create-case h1 {
     font-size: 36px;
     margin-bottom: 10px;
 }
 
-.hero-text p {
+.create-case p {
     font-size: 18px;
     color: #666;
-}
-
-.hero-image img {
-    width: 300px;
-    border-radius: 10px;
-}
-
-/* Best Selling Section */
-.best-selling {
-    padding: 50px;
-}
-
-.best-selling h2 {
-    font-size: 28px;
     margin-bottom: 20px;
 }
 
-.case-grid {
+.custom-options {
     display: flex;
     justify-content: center;
-    gap: 20px;
+    gap: 40px;
+    margin-top: 30px;
 }
 
-.case-item {
+.upload-option, .ai-option {
     background: #fff;
-    padding: 15px;
+    padding: 30px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 45%;
+    text-align: center;
 }
 
-.case-item img {
-    width: 150px;
-    border-radius: 8px;
+h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
 }
 
-.case-item button {
-    display: block;
-    margin-top: 10px;
+p {
+    font-size: 16px;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+input, textarea {
+    width: 100%;
     padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 16px;
+}
+
+button {
+    padding: 10px 20px;
     background: #007bff;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
     transition: 0.3s;
+    font-size: 16px;
+    margin-top: 15px;
 }
 
-.case-item button:hover {
+button:hover {
     background: #0056b3;
 }
 
-/* Custom Case Section */
-.custom-case {
-    padding: 50px;
-    background: #e3f2fd;
+/* Preview Section */
+.preview-section {
+    margin-top: 40px;
+    text-align: center;
 }
 
-.custom-case h2 {
-    font-size: 28px;
+.preview-section h2 {
+    font-size: 24px;
+    margin-bottom: 15px;
 }
 
-.custom-case p {
-    margin: 10px 0;
-    font-size: 18px;
-    color: #666;
+#custom-case-preview {
+    width: 150px;
+    height: auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
 }
 
-.custom-btn {
-    display: inline-block;
-    padding: 10px 20px;
-    background: #007bff;
-    color: #fff;
-    text-decoration: none;
-    border-radius: 5px;
-    transition: 0.3s;
-    font-size: 18px;
-}
-
-.custom-btn:hover {
-    background: #0056b3;
+.preview-section button {
+    display: block;
+    margin: 20px auto 0 auto;
 }
 
 /* Footer */
 footer {
     padding: 20px;
     background: #333;
-    color: #fff;
+    color: #ffffff;
     text-align: center;
+    margin-top: 100px;
 }
