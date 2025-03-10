@@ -1,3 +1,6 @@
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;600&display=swap');
+
 /* Reset Styles */
 * {
     margin: 0;
@@ -10,6 +13,8 @@ body {
     background-color: #f9f9f9;
     color: #333;
     text-align: center;
+    font-size: 18px;
+    line-height: 1.6;
 }
 
 /* Header */
@@ -27,10 +32,12 @@ header {
     align-items: center;
 }
 
-.logo img {
-    width: 110px; /* Adjust this size as needed */
-    height: auto;
-    max-height: 70px;
+.logo-text {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
 }
 
 nav {
@@ -48,17 +55,15 @@ nav ul li {
     margin: 0 15px;
 }
 
-/* Center the Create Your Own Case and Past Orders */
-.center-nav {
-    flex-grow: 1;
-    display: flex;
-    justify-content: center;
-}
-
 nav ul li a {
     text-decoration: none;
     color: #333;
-    font-size: 18px;
+    font-size: 20px;
+    transition: color 0.3s;
+}
+
+nav ul li a:hover {
+    color: #007bff;
 }
 
 nav ul li a img {
@@ -71,102 +76,160 @@ nav ul li a img {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 60px 10%;
+    padding: 80px 10%;
     background: #00bfff68;
+    animation: fadeInUp 0.8s ease-out;
 }
 
 .hero-text {
     max-width: 50%;
+    text-align: left;
 }
 
 .hero-text h1 {
-    font-size: 36px;
-    margin-bottom: 10px;
+    font-size: 48px;
+    margin-bottom: 15px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .hero-text p {
-    font-size: 18px;
+    font-size: 22px;
     color: #666;
+    margin-bottom: 20px;
 }
 
 .hero-image img {
-    width: 300px;
+    width: 350px;
     border-radius: 10px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease;
+}
+
+.hero-image img:hover {
+    transform: scale(1.05);
 }
 
 /* Best Selling Section */
 .best-selling {
-    padding: 50px;
+    padding: 60px;
+    animation: fadeInUp 0.8s ease-out;
 }
 
 .best-selling h2 {
-    font-size: 28px;
-    margin-bottom: 20px;
+    font-size: 32px;
+    margin-bottom: 30px;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .case-grid {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
     gap: 20px;
 }
 
 .case-item {
     background: #fff;
-    padding: 15px;
+    padding: 20px;
     border-radius: 10px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.case-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
 }
 
 .case-item img {
-    width: 150px;
+    width: 180px;
     border-radius: 8px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.case-item img:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+.case-item .price {
+    margin: 15px 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
 }
 
 .case-item button {
     display: block;
+    width: 100%;
     margin-top: 10px;
-    padding: 10px;
+    padding: 12px;
     background: #007bff;
     color: #fff;
     border: none;
     border-radius: 5px;
     cursor: pointer;
-    transition: 0.3s;
+    transition: transform 0.3s ease, background 0.3s ease;
 }
 
 .case-item button:hover {
     background: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Specific hover effect for phone case images */
+img[src$="case1.png"],
+img[src$="case2.png"],
+img[src$="case3.png"],
+img[src$="case4.png"],
+img[src$="case5.png"],
+img[src$="case6.png"] {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+img[src$="case1.png"]:hover,
+img[src$="case2.png"]:hover,
+img[src$="case3.png"]:hover,
+img[src$="case4.png"]:hover,
+img[src$="case5.png"]:hover,
+img[src$="case6.png"]:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 /* Custom Case Section */
 .custom-case {
-    padding: 50px;
+    padding: 60px;
     background: #00bfff68;
+    animation: fadeInUp 0.8s ease-out;
 }
 
 .custom-case h2 {
-    font-size: 28px;
+    font-size: 32px;
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 20px;
 }
 
 .custom-case p {
-    margin: 10px 0;
-    font-size: 18px;
+    margin: 15px 0;
+    font-size: 20px;
     color: #666;
 }
 
 .custom-btn {
     display: inline-block;
-    padding: 10px 20px;
+    padding: 12px 25px;
     background: #007bff;
     color: #fff;
     text-decoration: none;
     border-radius: 5px;
-    transition: 0.3s;
-    font-size: 18px;
+    transition: background 0.3s ease, transform 0.3s ease;
+    font-size: 20px;
 }
 
 .custom-btn:hover {
     background: #0056b3;
+    transform: scale(1.05);
 }
 
 /* Footer */
@@ -175,4 +238,17 @@ footer {
     background: #333;
     color: #fff;
     text-align: center;
+    font-size: 18px;
+}
+
+/* Fade-in Animation */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }

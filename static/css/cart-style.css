@@ -6,6 +6,15 @@
     font-family: 'Poppins', sans-serif;
 }
 
+/* Logo Text Styling */
+.logo-text {
+    font-size: 28px;
+    font-weight: bold;
+    letter-spacing: 2px;
+    font-family: 'Impact', fantasy;
+    color: #333;
+}
+
 body {
     background-color: #f9f9f9;
     color: #333;
