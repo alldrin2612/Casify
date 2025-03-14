@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login / Signup - Casify</title>
-    <link rel="stylesheet" href="static/css/login-signup-style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/login-signup-style.css') }}">
 </head>
 <body>
     <header>
@@ -13,17 +13,27 @@
         </div>
         <nav>
             <ul>
-                <li><a href="index">Home</a></li>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
             </ul>
         </nav>
     </header>
     
     <section class="login-signup-container">
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p class="flash-message">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         <div class="form-box" id="login-box">
             <h2>Login</h2>
-            <form>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
+            <form action="{{ url_for('login') }}" method="POST">
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
                 <button type="submit" class="btn">Login</button>
                 <p>Don't have an account? <a href="#" onclick="switchToSignup()">Sign up</a></p>
             </form>
@@ -31,11 +41,11 @@
         
         <div class="form-box hidden" id="signup-box">
             <h2>Sign Up</h2>
-            <form>
-                <input type="text" placeholder="First Name" required>
-                <input type="text" placeholder="Last Name" required>
-                <input type="text" placeholder="Username" required>
-                <input type="password" placeholder="Password" required>
+            <form action="{{ url_for('signup') }}" method="POST">
+                <input type="text" name="first_name" placeholder="First Name" required>
+                <input type="text" name="last_name" placeholder="Last Name" required>
+                <input type="text" name="username" placeholder="Username" required>
+                <input type="password" name="password" placeholder="Password" required>
                 <button type="submit" class="btn">Sign Up</button>
                 <p>Already have an account? <a href="#" onclick="switchToLogin()">Login</a></p>
             </form>

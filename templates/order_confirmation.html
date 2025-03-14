@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Casify - Order Confirmation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/confirm.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1 class="logo-text">Casify</h1>
+        </div>
+    </header>
+    
+    <section class="order-confirmation">
+        <h2>Order Confirmation</h2>
+        <p>Thank you for your purchase, {{ user['first_name'] }}!</p>
+        <p>Your order has been placed successfully.</p>
+        <p><strong>Order ID:</strong> {{ order['id'] }}</p>
+        <p><strong>Total Price:</strong> ${{ order['total_price'] }}</p>
+        <p><strong>Shipping Address:</strong> {{ order['shipping_address'] }}</p>
+        <p><strong>Payment Method:</strong> {{ order['payment_method'] }}</p>
+        
+        <h3>Order Details</h3>
+        <ul>
+            {% for item in order['items']|fromjson %}
+                <li>{{ item['case_type'] }} - ${{ item['price'] }} (x{{ item['quantity'] }})</li>
+            {% endfor %}
+        </ul>
+        
+        <p>Your order will be processed and shipped soon.</p>
+        <a href="{{ url_for('home') }}" class="custom-btn">Back to Home</a>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Casify. All Rights Reserved.</p>
+    </footer>
+</body>
+</html>

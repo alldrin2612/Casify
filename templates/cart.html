@@ -1,10 +1,11 @@
+<!-- cart.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cart - Casify</title>
-    <link rel="stylesheet" href="static/css/cart-style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/cart-style.css') }}">
 </head>
 <body>
     <header>
@@ -13,30 +14,108 @@
         </div>
         <nav>
             <ul>
-                <li><a href="index">Home</a></li>
-                <li><a href="create">Create Your Own Case</a></li>
-                <li><a href="orders">Past Orders</a></li>
-                <li><a href="login">Login</a></li>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('custom_case') }}">Create Your Own Case</a></li>
+                <li><a href="{{ url_for('order_history') }}">Past Orders</a></li>
+                {% if user %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
     
     <section class="cart">
         <h1>Your Shopping Cart</h1>
+        
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for message in messages %}
+                        <p class="flash-message">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        
         <div class="cart-container">
-            <p id="empty-cart-message">Your cart is empty.</p>
-            <div class="cart-items">
-                <!-- Cart items will be dynamically added here -->
-            </div>
-            <div class="cart-summary">
-                <h2>Total: $<span id="total-price">0.00</span></h2>
-                <a href="checkout" class="checkout-btn">Proceed to Checkout</a>
-            </div>
+            {% if cart_items|length == 0 %}
+                <p id="empty-cart-message">Your cart is empty.</p>
+            {% else %}
+                <div class="cart-items">
+                    {% for item in cart_items %}
+                        <div class="cart-item" id="cart-item-{{ item.id }}">
+                            <div class="item-image">
+                                {% if item.image_path %}
+                                    <img src="{{ item.image_path }}" alt="Case Preview">
+                                {% else %}
+                                    <img src="{{ url_for('static', filename='assets/case' ~ item.case_id ~ '.png') }}" alt="Case {{ item.case_id }}">
+                                {% endif %}
+                            </div>
+                            <div class="item-details">
+                                <h3>{{ "Custom Case" if item.case_type == "custom" else "Case " ~ item.case_id }}</h3>
+                                <p>${{ "%.2f"|format(item.price) }}</p>
+                            </div>
+                            <div class="item-actions">
+                                <button class="remove-btn" onclick="removeFromCart({{ item.id }})">Remove</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+                <div class="cart-summary">
+                    <h2>Total: $<span id="total-price">{{ "%.2f"|format(total_price) }}</span></h2>
+                    <a href="{{ url_for('checkout') }}" class="checkout-btn">Proceed to Checkout</a>
+                </div>
+            {% endif %}
         </div>
     </section>
     
     <footer>
         <p>&copy; 2025 Casify. All Rights Reserved.</p>
     </footer>
+    
+    <script>
+        function removeFromCart(itemId) {
+            fetch(`{{ url_for('remove_from_cart', item_id=0) }}`.replace('0', itemId), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Remove the item from the DOM
+                    const itemElement = document.getElementById(`cart-item-${itemId}`);
+                    itemElement.parentNode.removeChild(itemElement);
+                    
+                    // Recalculate total
+                    const remainingItems = document.querySelectorAll('.cart-item');
+                    if (remainingItems.length === 0) {
+                        document.querySelector('.cart-items').innerHTML = '';
+                        document.querySelector('.cart-summary').innerHTML = '';
+                        document.getElementById('empty-cart-message').style.display = 'block';
+                    } else {
+                        // Update the total (this is a simplified approach, a real app would recalculate from server data)
+                        fetch(`{{ url_for('view_cart') }}`)
+                        .then(response => response.text())
+                        .then(html => {
+                            const parser = new DOMParser();
+                            const doc = parser.parseFromString(html, 'text/html');
+                            const totalPrice = doc.getElementById('total-price').textContent;
+                            document.getElementById('total-price').textContent = totalPrice;
+                        });
+                    }
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
 </body>
 </html>

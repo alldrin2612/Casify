@@ -1,10 +1,11 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Casify - Home</title>
-    <link rel="stylesheet" href="static/css/style.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
     <header>
@@ -13,10 +14,14 @@
         </div>
         <nav>
             <ul>
-                <li><a href="cart"><img src="static/assets/cart-icon.png" alt="Cart"></a></li>
-                <li><a href="create">Create Your Own Case</a></li>
-                <li><a href="orders">Past Orders</a></li>
-                <li><a href="login">Login</a></li>
+                <li><a href="{{ url_for('view_cart') }}"><img src="{{ url_for('static', filename='assets/cart-icon.png') }}" alt="Cart"></a></li>
+                <li><a href="{{ url_for('custom_case') }}">Create Your Own Case</a></li>
+                <li><a href="{{ url_for('order_history') }}">Past Orders</a></li>
+                {% if user %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
             </ul>
         </nav>
     </header>
@@ -24,10 +29,10 @@
     <section class="hero">
         <div class="hero-text">
             <h1>Design Your Own Custom Phone Case</h1>
-            <p>Express your style with Casify’s premium quality, fully customizable phone cases.</p>
+            <p>Express your style with Casify's premium quality, fully customizable phone cases.</p>
         </div>
         <div class="hero-image">
-            <img src="static/assets/custom-case.png" alt="Custom Phone Case">
+            <img src="{{ url_for('static', filename='assets/custom-case.png') }}" alt="Custom Phone Case">
         </div>
     </section>
     
@@ -35,34 +40,34 @@
         <h2>Best Selling Cases</h2>
         <div class="case-grid">
             <div class="case-item">
-                <img src="static/assets/case1.png" alt="Case 1">
+                <img src="{{ url_for('static', filename='assets/case1.png') }}" alt="Case 1">
                 <p class="price">$25.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(1, 'standard', null, 25.00)">Add to Cart</button>
             </div>
             <div class="case-item">
-                <img src="static/assets/case2.png" alt="Case 2">
+                <img src="{{ url_for('static', filename='assets/case2.png') }}" alt="Case 2">
                 <p class="price">$30.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(2, 'standard', null, 30.00)">Add to Cart</button>
             </div>
             <div class="case-item">
-                <img src="static/assets/case3.png" alt="Case 3">
+                <img src="{{ url_for('static', filename='assets/case3.png') }}" alt="Case 3">
                 <p class="price">$28.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(3, 'standard', null, 28.00)">Add to Cart</button>
             </div>
             <div class="case-item">
-                <img src="static/assets/case4.png" alt="Case 3">
+                <img src="{{ url_for('static', filename='assets/case4.png') }}" alt="Case 4">
                 <p class="price">$25.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(4, 'standard', null, 25.00)">Add to Cart</button>
             </div>
             <div class="case-item">
-                <img src="static/assets/case5.png" alt="Case 3">
+                <img src="{{ url_for('static', filename='assets/case5.png') }}" alt="Case 5">
                 <p class="price">$28.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(5, 'standard', null, 28.00)">Add to Cart</button>
             </div>
             <div class="case-item">
-                <img src="static/assets/case6.png" alt="Case 3">
+                <img src="{{ url_for('static', filename='assets/case6.png') }}" alt="Case 6">
                 <p class="price">$30.00</p>
-                <button>Add to Cart</button>
+                <button onclick="addToCart(6, 'standard', null, 30.00)">Add to Cart</button>
             </div>
         </div>
     </section>
@@ -70,11 +75,45 @@
     <section class="custom-case">
         <h2>Create Your Own Case</h2>
         <p>Upload your image or use our AI Image Generator to design a unique phone case.</p>
-        <a href="create" class="custom-btn">Get Started</a>
+        <a href="{{ url_for('custom_case') }}" class="custom-btn">Get Started</a>
     </section>
     
     <footer>
         <p>&copy; 2025 Casify. All Rights Reserved.</p>
     </footer>
+
+    <script>
+        function addToCart(caseId, caseType, imagePath, price) {
+            fetch('{{ url_for("add_to_cart") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    case_id: caseId,
+                    case_type: caseType,
+                    image_path: imagePath,
+                    price: price,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Added to cart!');
+                } else {
+                    if (data.message === 'Please login to add items to cart') {
+                        window.location.href = '{{ url_for("login") }}';
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
 </body>
 </html>

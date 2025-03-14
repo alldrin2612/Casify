@@ -1,58 +1,424 @@
-from flask import Flask, request, jsonify, session, render_template
-from flask_cors import CORS
-import supabase
-from PIL import Image
 import os
-
+import time
+import json
+import secrets
+import hashlib
+from flask import Flask, request, redirect, render_template, session, flash, url_for, jsonify
+from supabase import create_client, Client
+from werkzeug.utils import secure_filename
+from PIL import Image
 from dotenv import load_dotenv
+from datetime import datetime
 
-# Load environment variables from .env file
+# Initialize Flask app
+app = Flask(__name__)
+app.secret_key = secrets.token_hex(16)
+
+# Initialize Supabase client
 load_dotenv()
+SUPABASE_URL = os.getenv('SUPABASE_URL')
+SUPABASE_KEY = os.getenv('SUPABASE_KEY')
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+# Configure upload folder
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
-# Initialize Flask App
-app = Flask(__name__, template_folder="templates", static_folder="static")
-app.secret_key = "supersecretkey"  # Change this to a secure key
-CORS(app)
+if not os.path.exists(UPLOAD_FOLDER):
+    os.makedirs(UPLOAD_FOLDER)
 
-# Initialize Supabase
-supabase_client = supabase.create_client(SUPABASE_URL, SUPABASE_KEY)
-# Check if variables are loaded (for debugging)
-if not SUPABASE_URL or not SUPABASE_KEY:
-    raise ValueError("Supabase URL or Key is missing. Check your .env file.")
+users = supabase.table('users').select('*').execute().data
+for user in users:
+    new_hashed_password = hashlib.sha256(user['password'].encode()).hexdigest()
+    supabase.table('users').update({'password': new_hashed_password}).eq('id', user['id']).execute()
+
+# Helper functions
+def allowed_file(filename):
+    return '.' in filename and \
+           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@app.template_filter('fromjson')
+def fromjson(value):
+    return json.loads(value)
+
+def check_auth():
+    if 'user_id' not in session:
+        return False
+    return True
+
+def get_user_data():
+    if not check_auth():
+        return None
+    
+    user_id = session['user_id']
+    response = supabase.table('users').select('*').eq('id', user_id).execute()
+    
+    if response.data:
+        return response.data[0]
+    return None
+
+@app.template_filter('format_datetime')
+def format_datetime(value):
+    if isinstance(value, int):  # If stored as Unix timestamp
+        return datetime.utcfromtimestamp(value).strftime('%Y-%m-%d %H:%M:%S')
+    elif isinstance(value, str):  # If stored as a string
+        try:
+            return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+        except ValueError:
+            return value  # Return as is if parsing fails
+    return value
 
 
-# Home Page Route
+def paste_image_on_case_template(image_path, user_id):
+    # Open the uploaded image
+    user_image = Image.open(image_path)
+    
+    # Open the case template
+    case_template = Image.open('static/case_template.png')
+    
+    # Resize the user image to fit the case template's dimensions
+    user_image = user_image.resize((case_template.width - 40, case_template.height - 80))
+    
+    # Create a new image with the same size as the template
+    final_image = Image.new('RGBA', case_template.size)
+    
+    # Paste the user image onto the case template
+    final_image.paste(user_image, (20, 40))
+    final_image.paste(case_template, (0, 0), case_template)
+    
+    # Save the final image
+    timestamp = int(time.time())
+    output_path = f"{app.config['UPLOAD_FOLDER']}/case_{user_id}_{timestamp}.png"
+    final_image.save(output_path)
+    
+    return output_path
+
+# Routes
 @app.route('/')
 def home():
-    return render_template('index.html')
+    user = get_user_data()
+    return render_template('index.html', user=user)
 
-@app.route('/index')
-def index():
-    return render_template('index.html')
-
-# Render Pages
-@app.route('/cart')
-def cart_page():
-    return render_template('cart.html')
-
-@app.route('/create')
-def create_page():
-    return render_template('create.html')
-
-@app.route('/orders')
-def orders_page():
-    return render_template('orders.html')
-
-@app.route('/login')
-def login_page():
+# Authentication routes
+@app.route('/signup', methods=['GET', 'POST'])
+def signup():
+    if request.method == 'POST':
+        first_name = request.form['first_name']
+        last_name = request.form['last_name']
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Check if username already exists
+        response = supabase.table('users').select('*').eq('username', username).execute()
+        if response.data:
+            flash('Username already exists')
+            return render_template('login.html')
+        
+        # Hash the password
+        hashed_password = hash_password(password)
+        
+        # Insert the new user
+        user_data = {
+            'first_name': first_name,
+            'last_name': last_name,
+            'username': username,
+            'password': hashed_password
+        }
+        
+        response = supabase.table('users').insert(user_data).execute()
+        
+        if response.data:
+            # Login the user
+            user_id = response.data[0]['id']
+            session['user_id'] = user_id
+            session['username'] = username
+            flash('Signup successful!')
+            return redirect(url_for('home'))
+        else:
+            flash('Signup failed')
+            return render_template('login.html')
+    
     return render_template('login.html')
 
-@app.route('/checkout')
-def checkout_page():
-    return render_template('checkout.html')
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        
+        # Get user by username
+        response = supabase.table('users').select('*').eq('username', username).execute()
+        
+        if response.data:
+            stored_password = response.data[0]['password']
+            # Verify the password against stored hash
+            if verify_password(password, stored_password):
+                user_id = response.data[0]['id']
+                session['user_id'] = user_id
+                session['username'] = username
+                flash('Login successful!')
+                return redirect(url_for('home'))
+        
+        flash('Invalid username or password')
+        return render_template('login.html')
+    
+    return render_template('login.html')
+
+def hash_password(password):
+    # Using bcrypt for secure password hashing
+    import bcrypt
+    # Generate a salt and hash the password
+    salt = bcrypt.gensalt()
+    hashed = bcrypt.hashpw(password.encode('utf-8'), salt)
+    return hashed.decode('utf-8')
+
+def verify_password(plain_password, hashed_password):
+    # Verify a password against the stored hash
+    import bcrypt
+    try:
+        # Make sure the hashed password is a valid bcrypt hash
+        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+    except ValueError:
+        # If you're getting "Invalid salt" errors, it might be because
+        # the stored password isn't in the correct format
+        return False
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    flash('Logged out successfully')
+    return redirect(url_for('home'))
+
+# Cart management routes
+@app.route('/cart', methods=['GET'])
+def view_cart():
+    if not check_auth():
+        flash('Please login to view your cart')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    response = supabase.table('cart').select('*').eq('user_id', user_id).execute()
+    
+    cart_items = response.data
+    total_price = sum(item['price'] for item in cart_items)
+    
+    return render_template('cart.html', cart_items=cart_items, total_price=total_price, user=get_user_data())
+
+@app.route('/cart/add', methods=['POST'])
+def add_to_cart():
+    try:
+        if not check_auth():
+            return jsonify({'success': False, 'message': 'Please login to add items to cart'}), 401
+        
+        user_id = session.get('user_id')
+        if not user_id:
+            return jsonify({'success': False, 'message': 'User ID not found in session'}), 400
+        
+        data = request.json
+        if not data:
+            return jsonify({'success': False, 'message': 'No data received'}), 400
+        
+        cart_item = {
+            'user_id': user_id,
+            'case_id': data.get('case_id'),
+            'case_type': data.get('case_type'),
+            'image_path': data.get('image_path'),
+            'price': data.get('price', 25.99),
+            'quantity': data.get('quantity', 1)
+        }
+        
+        # Log the data for debugging
+        print(f"Attempting to add to cart: {cart_item}")
+        
+        response = supabase.table('cart').insert(cart_item).execute()
+        
+        if response.data:
+            return jsonify({'success': True, 'message': 'Item added to cart'})
+        else:
+            print(f"Supabase error: {response.error}")
+            return jsonify({'success': False, 'message': 'Database error'}), 500
+    except Exception as e:
+        print(f"Error adding to cart: {str(e)}")
+        return jsonify({'success': False, 'message': f'Server error: {str(e)}'}), 500
+
+@app.route('/cart/remove/<int:item_id>', methods=['POST'])
+def remove_from_cart(item_id):
+    if not check_auth():
+        return jsonify({'success': False, 'message': 'Please login to remove items from cart'}), 401
+    
+    user_id = session['user_id']
+    
+    response = supabase.table('cart').delete().eq('id', item_id).eq('user_id', user_id).execute()
+    
+    if response.data:
+        return jsonify({'success': True, 'message': 'Item removed from cart'})
+    else:
+        return jsonify({'success': False, 'message': 'Failed to remove item from cart'})
+
+# Checkout route
+@app.route('/checkout', methods=['GET', 'POST'])
+def checkout():
+    if not check_auth():
+        flash('Please login to checkout')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    
+    if request.method == 'POST':
+        # Get cart items
+        cart_response = supabase.table('cart').select('*').eq('user_id', user_id).execute()
+        cart_items = cart_response.data
+        
+        if not cart_items:
+            flash('Your cart is empty')
+            return redirect(url_for('view_cart'))
+        
+        # Get form data
+        shipping_address = request.form['shipping_address']
+        payment_method = request.form['payment_method']
+        
+        # Calculate total price
+        total_price = sum(item['price'] * item['quantity'] for item in cart_items)
+        
+        # Create order
+        order_data = {
+            'user_id': user_id,
+            'shipping_address': shipping_address,
+            'payment_method': payment_method,
+            'total_price': total_price,
+            'status': 'pending',
+            'items': json.dumps(cart_items)
+        }
+        
+        order_response = supabase.table('orders').insert(order_data).execute()
+        
+        if order_response.data:
+            # Clear cart
+            supabase.table('cart').delete().eq('user_id', user_id).execute()
+            
+            flash('Order placed successfully')
+            return redirect(url_for('order_confirmation', order_id=order_response.data[0]['id']))
+        else:
+            flash('Failed to place order')
+            return redirect(url_for('view_cart'))
+    
+    # Get cart items for display
+    cart_response = supabase.table('cart').select('*').eq('user_id', user_id).execute()
+    cart_items = cart_response.data
+    total_price = sum(item['price'] * item['quantity'] for item in cart_items)
+    
+    return render_template('checkout.html', cart_items=cart_items, total_price=total_price, user=get_user_data())
+
+@app.route('/order/confirmation/<int:order_id>')
+def order_confirmation(order_id):
+    if not check_auth():
+        flash('Please login to view order confirmation')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+    
+    response = supabase.table('orders').select('*').eq('id', order_id).eq('user_id', user_id).execute()
+    
+    if response.data:
+        order = response.data[0]
+        return render_template('order_confirmation.html', order=order, user=get_user_data())
+    else:
+        flash('Order not found')
+        return redirect(url_for('home'))
+
+# Custom case creation routes
+@app.route('/custom_case', methods=['GET'])
+def custom_case():
+    if not check_auth():
+        flash('Please login to create custom cases')
+        return redirect(url_for('login'))
+    
+    return render_template('custom_case.html', user=get_user_data())
+
+@app.route('/custom_case/upload', methods=['POST'])
+def upload_image():
+    if not check_auth():
+        return jsonify({'success': False, 'message': 'Please login to upload images'}), 401
+    
+    user_id = session['user_id']
+    
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'No file part'})
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({'success': False, 'message': 'No selected file'})
+    
+    if file and allowed_file(file.filename):
+        filename = secure_filename(file.filename)
+        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        file.save(file_path)
+        
+        # Process the image
+        output_path = paste_image_on_case_template(file_path, user_id)
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Image uploaded successfully',
+            'image_path': output_path
+        })
+    
+    return jsonify({'success': False, 'message': 'Invalid file type'})
+
+@app.route('/custom_case/generate', methods=['POST'])
+def generate_ai_image():
+    if not check_auth():
+        return jsonify({'success': False, 'message': 'Please login to generate images'}), 401
+    
+    user_id = session['user_id']
+    prompt = request.json.get('prompt')
+    
+    if not prompt:
+        return jsonify({'success': False, 'message': 'No prompt provided'})
+    
+    # TODO: Implement actual AI image generation
+    # For now, we'll use a placeholder image
+    placeholder_path = 'static/placeholder.png'
+    
+    # Process the image
+    output_path = paste_image_on_case_template(placeholder_path, user_id)
+    
+    # Store the generated image info in the database
+    image_data = {
+        'user_id': user_id,
+        'prompt': prompt,
+        'image_path': output_path,
+        'created_at': int(time.time())
+    }
+    
+    supabase.table('generated_images').insert(image_data).execute()
+    
+    return jsonify({
+        'success': True, 
+        'message': 'Image generated successfully',
+        'image_path': output_path
+    })
+
+# Order history route
+@app.route('/orders')
+def order_history():
+    if not check_auth():
+        flash('Please login to view your orders')
+        return redirect(url_for('login'))
+    
+    user_id = session['user_id']
+
+    response = supabase.table('orders').select('*').eq('user_id', user_id).order('created_at', desc=True).execute()
+    orders = response.data if response.data else []
+
+    for order in response.data:
+        if isinstance(order['items'], str):  # Convert JSON string to Python list
+            order['items'] = json.loads(order['items'])  # Ensure it is a list
+
+    
+    return render_template('orders.html', orders=orders, user=get_user_data())
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,172 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Your Own Case - Casify</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/create-style.css') }}">
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <h1 class="logo-text">Casify</h1>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="{{ url_for('view_cart') }}"><img src="{{ url_for('static', filename='assets/cart-icon.png') }}" alt="Cart"></a></li>
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('order_history') }}">Past Orders</a></li>
+                {% if user %}
+                    <li><a href="{{ url_for('logout') }}">Logout</a></li>
+                {% else %}
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+    </header>
+    
+    <section class="create-case">
+        <h1>Create Your Own Phone Case</h1>
+        <p>Choose how you want to customize your case.</p>
+        
+        <div class="custom-options">
+            <div class="upload-option">
+                <h2>Upload Your Own Image</h2>
+                <p>Upload an image to be printed on your case.</p>
+                <input type="file" id="image-upload" accept="image/*">
+                <button onclick="uploadImage()">Upload & Preview</button>
+            </div>
+            
+            <div class="ai-option">
+                <h2>AI Image Generation</h2>
+                <p>Describe an image, and AI will generate it for your case.</p>
+                <textarea id="ai-description" placeholder="Describe your image..."></textarea>
+                <button onclick="generateAIImage()">Generate Image</button>
+            </div>
+        </div>
+        
+        <div class="preview-section">
+            <h2>Preview Your Custom Case</h2>
+            <img id="custom-case-preview" src="{{ url_for('static', filename='assets/templatewhite.png') }}" alt="Custom Case Preview">
+            <button id="add-to-cart-btn" onclick="addCustomCaseToCart()" disabled>Add to Cart - $30.00</button>
+        </div>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Casify. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        let currentImagePath = null;
+
+        function uploadImage() {
+            const fileInput = document.getElementById('image-upload');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('Please select an image file');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            fetch('{{ url_for("upload_image") }}', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('custom-case-preview').src = data.image_path;
+                    currentImagePath = data.image_path;
+                    document.getElementById('add-to-cart-btn').disabled = false;
+                } else {
+                    if (data.message === 'Please login to upload images') {
+                        window.location.href = '{{ url_for("login") }}';
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while uploading the image.');
+            });
+        }
+        
+        function generateAIImage() {
+            const prompt = document.getElementById('ai-description').value;
+            
+            if (!prompt) {
+                alert('Please enter a description for the AI to generate an image');
+                return;
+            }
+            
+            fetch('{{ url_for("generate_ai_image") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ prompt: prompt })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('custom-case-preview').src = data.image_path;
+                    currentImagePath = data.image_path;
+                    document.getElementById('add-to-cart-btn').disabled = false;
+                } else {
+                    if (data.message === 'Please login to generate images') {
+                        window.location.href = '{{ url_for("login") }}';
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while generating the image.');
+            });
+        }
+        
+        function addCustomCaseToCart() {
+            if (!currentImagePath) {
+                alert('Please upload or generate an image first');
+                return;
+            }
+            
+            fetch('{{ url_for("add_to_cart") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    case_id: null,
+                    case_type: 'custom',
+                    image_path: currentImagePath,
+                    price: 30.00,
+                    quantity: 1
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Custom case added to cart!');
+                } else {
+                    if (data.message === 'Please login to add items to cart') {
+                        window.location.href = '{{ url_for("login") }}';
+                    } else {
+                        alert(data.message);
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred. Please try again.');
+            });
+        }
+    </script>
+</body>
+</html>
+
+
