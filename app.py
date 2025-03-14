@@ -401,6 +401,8 @@ def generate_ai_image():
         'image_path': output_path
     })
 
+import json
+
 # Order history route
 @app.route('/orders')
 def order_history():
@@ -408,17 +410,27 @@ def order_history():
         flash('Please login to view your orders')
         return redirect(url_for('login'))
     
-    user_id = session['user_id']
+    user_id = session.get('user_id')
+    if not user_id:
+        flash('Session expired. Please login again.')
+        return redirect(url_for('login'))
 
+    # Fetch orders from Supabase
     response = supabase.table('orders').select('*').eq('user_id', user_id).order('created_at', desc=True).execute()
+    
+    # Ensure orders is a list
     orders = response.data if response.data else []
 
-    for order in response.data:
-        if isinstance(order['items'], str):  # Convert JSON string to Python list
-            order['items'] = json.loads(order['items'])  # Ensure it is a list
+    # Parse 'items' field for each order
+    for order in orders:
+        if isinstance(order.get('items'), str):  # Check if items is a JSON string
+            try:
+                order['items'] = json.loads(order['items'])  # Convert to Python list
+            except json.JSONDecodeError:
+                order['items'] = []  # Default to an empty list if JSON is invalid
 
-    
     return render_template('orders.html', orders=orders, user=get_user_data())
+
 
 if __name__ == '__main__':
     app.run(debug=True)

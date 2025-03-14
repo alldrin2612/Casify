@@ -58,13 +58,17 @@
                             </div>
                             <div class="order-items">
                                 <h4>Items:</h4>
-                                {% set items = order.items if order.items else [] %}
+                                {% set items = order.items if order.items is iterable else [] %}  <!-- Ensure items is iterable -->
                                 <ul>
                                     {% for item in items %}
-                                        <li>{{ "Custom Case" if item.case_type == "custom" else "Case " ~ item.case_id }} - ${{ "%.2f"|format(item.price) }}</li>
+                                        <li>
+                                            {{ "Custom Case" if item.case_type == "custom" else "Case " ~ item.case_id }} 
+                                            - ${{ "%.2f"|format(item.price) }}
+                                        </li>
                                     {% endfor %}
                                 </ul>
                             </div>
+                            
                         </div>
                     {% endfor %}
                 </div>
