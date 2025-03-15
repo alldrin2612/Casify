@@ -2,7 +2,6 @@ import os
 import time
 import json
 import secrets
-import bcrypt
 from flask import Flask, request, redirect, render_template, session, flash, url_for, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -65,29 +64,6 @@ def format_datetime(value):
     return value
 
 
-def paste_image_on_case_template(image_path, user_id):
-    # Open the uploaded image
-    user_image = Image.open(image_path)
-    
-    # Open the case template
-    case_template = Image.open('static/case_template.png')
-    
-    # Resize the user image to fit the case template's dimensions
-    user_image = user_image.resize((case_template.width - 40, case_template.height - 80))
-    
-    # Create a new image with the same size as the template
-    final_image = Image.new('RGBA', case_template.size)
-    
-    # Paste the user image onto the case template
-    final_image.paste(user_image, (20, 40))
-    final_image.paste(case_template, (0, 0), case_template)
-    
-    # Save the final image
-    timestamp = int(time.time())
-    output_path = f"{app.config['UPLOAD_FOLDER']}/case_{user_id}_{timestamp}.png"
-    final_image.save(output_path)
-    
-    return output_path
 
 # Routes
 @app.route('/')
@@ -237,7 +213,13 @@ def add_to_cart():
         response = supabase.table('cart').insert(cart_item).execute()
         
         if response.data:
-            return jsonify({'success': True, 'message': 'Item added to cart'})
+            # Return product info for a richer notification if available
+            product_name = data.get('case_type', 'Item')
+            return jsonify({
+                'success': True, 
+                'message': f"{product_name} added to cart",
+                'item': cart_item
+            })
         else:
             print(f"Supabase error: {response.error}")
             return jsonify({'success': False, 'message': 'Database error'}), 500
@@ -339,6 +321,43 @@ def custom_case():
     
     return render_template('custom_case.html', user=get_user_data())
 
+def paste_image_on_case_template(image_path, user_id):
+    try:
+        # Open the uploaded image
+        user_image = Image.open(image_path)
+        
+        # Open the case template
+        case_template = Image.open('static/assets/templatewhite.png')
+        
+        # Resize the user image to fit the case template's dimensions
+        user_image = user_image.resize((case_template.width - 40, case_template.height - 80))
+        
+        # Create a new image with the same size as the template
+        final_image = Image.new('RGBA', case_template.size)
+        
+        # Paste the user image onto the case template
+        final_image.paste(user_image, (20, 40))
+        final_image.paste(case_template, (0, 0), case_template)
+        
+        # Save the final image
+        timestamp = int(time.time())
+        output_filename = f"case_{user_id}_{timestamp}.png"
+        
+        # Save directly to static/uploads directory
+        static_uploads_dir = os.path.join('static', 'uploads')
+        if not os.path.exists(static_uploads_dir):
+            os.makedirs(static_uploads_dir)
+            
+        output_path = os.path.join(static_uploads_dir, output_filename)
+        final_image.save(output_path)
+        
+        # Return a URL path that will work with the frontend
+        url_path = url_for('static', filename=f'uploads/{output_filename}')
+        return url_path
+    except Exception as e:
+        print(f"Error in paste_image_on_case_template: {e}")
+        raise
+
 @app.route('/custom_case/upload', methods=['POST'])
 def upload_image():
     if not check_auth():
@@ -356,17 +375,32 @@ def upload_image():
     
     if file and allowed_file(file.filename):
         filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+        
+        # Save uploaded file to a temporary location
+        temp_dir = os.path.join('static', 'temp')
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+            
+        file_path = os.path.join(temp_dir, filename)
         file.save(file_path)
         
-        # Process the image
-        output_path = paste_image_on_case_template(file_path, user_id)
-        
-        return jsonify({
-            'success': True, 
-            'message': 'Image uploaded successfully',
-            'image_path': output_path
-        })
+        try:
+            # Process the image
+            image_url = paste_image_on_case_template(file_path, user_id)
+            
+            # Clean up the original uploaded file
+            os.remove(file_path)
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Image uploaded successfully',
+                'image_path': image_url
+            })
+        except Exception as e:
+            return jsonify({
+                'success': False,
+                'message': f'Error processing image: {str(e)}'
+            }), 500
     
     return jsonify({'success': False, 'message': 'Invalid file type'})
 
@@ -404,7 +438,6 @@ def generate_ai_image():
         'image_path': output_path
     })
 
-import json
 
 # Order history route
 @app.route('/orders')

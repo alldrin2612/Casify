@@ -252,3 +252,54 @@ footer {
         transform: translateY(0);
     }
 }
+
+/* Add this to your CSS file */
+#cart-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ffffff;
+    color: #333333;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease-in-out;
+    max-width: 300px;
+    border-left: 4px solid #4CAF50;
+  }
+  
+  #cart-notification.active {
+    transform: translateX(0);
+  }
+  
+  .notification-icon {
+    background-color: #4CAF50;
+    color: white;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 12px;
+    font-weight: bold;
+  }
+  
+  .notification-message {
+    font-size: 16px;
+    font-weight: 500;
+  }
+  
+  /* Optional animation to make it fade out */
+  @keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  
+  #cart-notification.fade-out {
+    animation: fadeOut 0.5s forwards;
+  }

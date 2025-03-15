@@ -83,6 +83,31 @@
     </footer>
 
     <script>
+        // Cart notification function
+        function showCartNotification(message = "Added to cart!") {
+            // Create notification element if it doesn't exist
+            let notification = document.getElementById('cart-notification');
+            if (!notification) {
+                notification = document.createElement('div');
+                notification.id = 'cart-notification';
+                document.body.appendChild(notification);
+            }
+            
+            // Set the message
+            notification.innerHTML = `
+                <div class="notification-icon">✓</div>
+                <div class="notification-message">${message}</div>
+            `;
+            
+            // Add active class to trigger animation
+            notification.classList.add('active');
+            
+            // Remove after timeout
+            setTimeout(() => {
+                notification.classList.remove('active');
+            }, 3000);
+        }
+
         function addToCart(caseId, caseType, imagePath, price) {
             fetch('{{ url_for("add_to_cart") }}', {
                 method: 'POST',
@@ -100,18 +125,19 @@
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    alert('Added to cart!');
+                    // Replace alert with the new notification
+                    showCartNotification('Added to cart!');
                 } else {
                     if (data.message === 'Please login to add items to cart') {
                         window.location.href = '{{ url_for("login") }}';
                     } else {
-                        alert(data.message);
+                        showCartNotification('Error: ' + data.message);
                     }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('An error occurred. Please try again.');
+                showCartNotification('Error adding to cart');
             });
         }
     </script>

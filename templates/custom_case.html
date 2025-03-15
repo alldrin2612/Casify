@@ -59,40 +59,44 @@
         let currentImagePath = null;
 
         function uploadImage() {
-            const fileInput = document.getElementById('image-upload');
-            const file = fileInput.files[0];
+    const fileInput = document.getElementById('image-upload');
+    const file = fileInput.files[0];
+    
+    if (!file) {
+        alert('Please select an image file');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    fetch('{{ url_for("upload_image") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Use the full URL path returned by the backend
+            document.getElementById('custom-case-preview').src = data.image_path;
+            currentImagePath = data.image_path;
+            document.getElementById('add-to-cart-btn').disabled = false;
             
-            if (!file) {
-                alert('Please select an image file');
-                return;
+            // For debugging
+            console.log("Preview image set to: " + data.image_path);
+        } else {
+            if (data.message === 'Please login to upload images') {
+                window.location.href = '{{ url_for("login") }}';
+            } else {
+                alert(data.message);
             }
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            fetch('{{ url_for("upload_image") }}', {
-                method: 'POST',
-                body: formData
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('custom-case-preview').src = data.image_path;
-                    currentImagePath = data.image_path;
-                    document.getElementById('add-to-cart-btn').disabled = false;
-                } else {
-                    if (data.message === 'Please login to upload images') {
-                        window.location.href = '{{ url_for("login") }}';
-                    } else {
-                        alert(data.message);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while uploading the image.');
-            });
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while uploading the image.');
+    });
+}
         
         function generateAIImage() {
             const prompt = document.getElementById('ai-description').value;
@@ -129,42 +133,42 @@
             });
         }
         
-        function addCustomCaseToCart() {
-            if (!currentImagePath) {
-                alert('Please upload or generate an image first');
-                return;
+// Updated frontend function
+function addCustomCaseToCart() {
+    if (!currentImagePath) {
+        alert('Please upload or generate an image first');
+        return;
+    }
+    
+    fetch('{{ url_for("add_to_cart") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            case_type: 'custom',
+            image_path: currentImagePath,
+            price: 30.00,
+            quantity: 1
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Custom case added to cart!');
+        } else {
+            if (data.message === 'Please login to add items to cart') {
+                window.location.href = '{{ url_for("login") }}';
+            } else {
+                alert(data.message);
             }
-            
-            fetch('{{ url_for("add_to_cart") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    case_id: null,
-                    case_type: 'custom',
-                    image_path: currentImagePath,
-                    price: 30.00,
-                    quantity: 1
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert('Custom case added to cart!');
-                } else {
-                    if (data.message === 'Please login to add items to cart') {
-                        window.location.href = '{{ url_for("login") }}';
-                    } else {
-                        alert(data.message);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred. Please try again.');
-            });
         }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred. Please try again.');
+    });
+}
     </script>
 </body>
 </html>
