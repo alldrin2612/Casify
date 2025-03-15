@@ -198,14 +198,46 @@ def add_to_cart():
         if not data:
             return jsonify({'success': False, 'message': 'No data received'}), 400
         
-        cart_item = {
-            'user_id': user_id,
-            'case_id': data.get('case_id'),
-            'case_type': data.get('case_type'),
-            'image_path': data.get('image_path'),
-            'price': data.get('price', 25.99),
-            'quantity': data.get('quantity', 1)
-        }
+        case_type = data.get('case_type')
+        
+        # Handle custom cases differently
+        if case_type == 'custom':
+            # For custom cases, we first need to create a custom case entry
+            custom_case = {
+                'user_id': user_id,
+                'image_path': data.get('image_path'),
+                'created_at': datetime.now().isoformat()
+            }
+            
+            # Insert the custom case first
+            custom_case_response = supabase.table('custom_cases').insert(custom_case).execute()
+            
+            if not custom_case_response.data:
+                print(f"Supabase error: {custom_case_response.error}")
+                return jsonify({'success': False, 'message': 'Failed to create custom case'}), 500
+            
+            # Get the ID of the newly created custom case
+            custom_case_id = custom_case_response.data[0]['id']
+            
+            # Now we can add to cart with the custom case ID
+            cart_item = {
+                'user_id': user_id,
+                'case_id': custom_case_id,  # Use the custom case ID
+                'case_type': 'custom',
+                'image_path': data.get('image_path'),
+                'price': data.get('price', 30.00),
+                'quantity': data.get('quantity', 1)
+            }
+        else:
+            # For regular cases, use the provided case_id
+            cart_item = {
+                'user_id': user_id,
+                'case_id': data.get('case_id'),
+                'case_type': data.get('case_type'),
+                'image_path': data.get('image_path'),
+                'price': data.get('price', 25.99),
+                'quantity': data.get('quantity', 1)
+            }
         
         # Log the data for debugging
         print(f"Attempting to add to cart: {cart_item}")
@@ -214,7 +246,7 @@ def add_to_cart():
         
         if response.data:
             # Return product info for a richer notification if available
-            product_name = data.get('case_type', 'Item')
+            product_name = "Custom Case" if case_type == 'custom' else data.get('case_type', 'Item')
             return jsonify({
                 'success': True, 
                 'message': f"{product_name} added to cart",
