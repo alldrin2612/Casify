@@ -172,12 +172,19 @@ def verify_password(plain_password, hashed_password):
     # Verify a password against the stored hash
     import bcrypt
     try:
-        # Make sure the hashed password is a valid bcrypt hash
-        return bcrypt.hashpw(user['password'].encode(), bcrypt.gensalt()).decode()
-
-    except ValueError:
-        # If you're getting "Invalid salt" errors, it might be because
-        # the stored password isn't in the correct format
+        # Ensure both the plaintext password and stored hash are properly encoded
+        plain_password_bytes = plain_password.encode('utf-8')
+        
+        # If the hashed_password is already in bytes, use it directly; otherwise encode it
+        if isinstance(hashed_password, bytes):
+            hashed_password_bytes = hashed_password
+        else:
+            hashed_password_bytes = hashed_password.encode('utf-8')
+            
+        # Use bcrypt to verify the password
+        return bcrypt.checkpw(plain_password_bytes, hashed_password_bytes)
+    except Exception as e:
+        print(f"Password verification error: {e}")
         return False
 
 @app.route('/logout')
