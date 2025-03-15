@@ -2,7 +2,7 @@ import os
 import time
 import json
 import secrets
-import hashlib
+import bcrypt
 from flask import Flask, request, redirect, render_template, session, flash, url_for, jsonify
 from supabase import create_client, Client
 from werkzeug.utils import secure_filename
@@ -27,11 +27,6 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
-
-users = supabase.table('users').select('*').execute().data
-for user in users:
-    new_hashed_password = hashlib.sha256(user['password'].encode()).hexdigest()
-    supabase.table('users').update({'password': new_hashed_password}).eq('id', user['id']).execute()
 
 # Helper functions
 def allowed_file(filename):
@@ -178,7 +173,8 @@ def verify_password(plain_password, hashed_password):
     import bcrypt
     try:
         # Make sure the hashed password is a valid bcrypt hash
-        return bcrypt.checkpw(plain_password.encode('utf-8'), hashed_password.encode('utf-8'))
+        return bcrypt.hashpw(user['password'].encode(), bcrypt.gensalt()).decode()
+
     except ValueError:
         # If you're getting "Invalid salt" errors, it might be because
         # the stored password isn't in the correct format
