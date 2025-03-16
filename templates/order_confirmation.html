@@ -67,7 +67,7 @@
     
     <section class="order-confirmation">
         <h2>Order Confirmation</h2>
-        <p>Thank you for your purchase, {{ user['first_name'] }}!</p>
+        <p>Thank you for your purchase, {{ user['first_name']|capitalize }}!</p>
         <p>Your order has been placed successfully.</p>
         <p><strong>Order ID:</strong> {{ order['id'] }}</p>
         <p><strong>Total Price:</strong> ${{ order['total_price'] }}</p>
