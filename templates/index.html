@@ -28,8 +28,17 @@
     
     <section class="hero">
         <div class="hero-text">
-            <h1>Design Your Own Custom Phone Case</h1>
+            <h1>Welcome to CASIFY</h1>
             <p>Express your style with Casify's premium quality, fully customizable phone cases.</p>
+            <ul>
+                <li>Military-grade drop protection up to 10 feet</li>
+                <li>Upload your own photos for a personal touch</li>
+                <li>Choose from exclusive artist collaborations</li>
+                <li>Use AI image generation to create unique designs</li>
+                <li>Fast shipping</li>
+            </ul>
+            
+            <p>Express yourself while giving your phone the protection it deserves.</p>
         </div>
         <div class="hero-image">
             <img src="{{ url_for('static', filename='assets/custom-case.png') }}" alt="Custom Phone Case">
@@ -42,32 +51,50 @@
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case1.png') }}" alt="Case 1">
                 <p class="price">$25.00</p>
-                <button onclick="addToCart(1, 'standard', null, 25.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case1.png') }}" 
+                        onclick="addToCart(1, 'standard', this.getAttribute('data-image'), 25.00)">
+                    Add to Cart
+                </button>
             </div>
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case2.png') }}" alt="Case 2">
                 <p class="price">$30.00</p>
-                <button onclick="addToCart(2, 'standard', null, 30.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case2.png') }}" 
+                        onclick="addToCart(2, 'standard', this.getAttribute('data-image'), 30.00)">
+                    Add to Cart
+                </button>
             </div>
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case3.png') }}" alt="Case 3">
                 <p class="price">$28.00</p>
-                <button onclick="addToCart(3, 'standard', null, 28.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case3.png') }}" 
+                        onclick="addToCart(3, 'standard', this.getAttribute('data-image'), 28.00)">
+                    Add to Cart
+                </button>
             </div>
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case4.png') }}" alt="Case 4">
                 <p class="price">$25.00</p>
-                <button onclick="addToCart(4, 'standard', null, 25.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case4.png') }}" 
+                        onclick="addToCart(4, 'standard', this.getAttribute('data-image'), 25.00)">
+                    Add to Cart
+                </button>
             </div>
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case5.png') }}" alt="Case 5">
                 <p class="price">$28.00</p>
-                <button onclick="addToCart(5, 'standard', null, 28.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case5.png') }}" 
+                        onclick="addToCart(5, 'standard', this.getAttribute('data-image'), 28.00)">
+                    Add to Cart
+                </button>
             </div>
             <div class="case-item">
                 <img src="{{ url_for('static', filename='assets/case6.png') }}" alt="Case 6">
                 <p class="price">$30.00</p>
-                <button onclick="addToCart(6, 'standard', null, 30.00)">Add to Cart</button>
+                <button data-image="{{ url_for('static', filename='assets/case6.png') }}" 
+                        onclick="addToCart(6, 'standard', this.getAttribute('data-image'), 30.00)">
+                    Add to Cart
+                </button>
             </div>
         </div>
     </section>

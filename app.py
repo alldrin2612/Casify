@@ -307,7 +307,7 @@ def checkout():
             'shipping_address': shipping_address,
             'payment_method': payment_method,
             'total_price': total_price,
-            'status': 'pending',
+            'status': 'Delivered',
             'items': json.dumps(cart_items)
         }
         

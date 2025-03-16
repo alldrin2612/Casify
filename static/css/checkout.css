@@ -22,24 +22,20 @@ header {
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* Logo Text Styling */
-.logo-text {
-    font-size: 28px;
-    font-weight: bold;
-    letter-spacing: 2px;
-    font-family: 'Impact', fantasy;
-    color: #333;
-}
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Poppins:wght@400;600&display=swap');
 
 .logo {
     display: flex;
     align-items: center;
 }
 
-.logo img {
-    width: 110px;
-    height: auto;
-    max-height: 70px;
+.logo-text {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    font-family: 'Montserrat', sans-serif;
+    color: #333;
 }
 
 nav ul {
