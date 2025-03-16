@@ -71,8 +71,8 @@
         <p>Your order has been placed successfully.</p>
         <p><strong>Order ID:</strong> {{ order['id'] }}</p>
         <p><strong>Total Price:</strong> ${{ order['total_price'] }}</p>
-        <p><strong>Shipping Address:</strong> {{ order['shipping_address'] }}</p>
-        <p><strong>Payment Method:</strong> {{ order['payment_method'] }}</p>
+        <p><strong>Shipping Address:</strong> {{ order['shipping_address']|capitalize }}</p>
+        <p><strong>Payment Method:</strong> {{ order['payment_method']|capitalize }}</p>
         
         <h3>Order Details</h3>
         <div class="order-items">
