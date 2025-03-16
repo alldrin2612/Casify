@@ -154,39 +154,59 @@
         }
         
         function generateAIImage() {
-            const prompt = document.getElementById('ai-description').value;
-            
-            if (!prompt) {
-                alert('Please enter a description for the AI to generate an image');
-                return;
+    const prompt = document.getElementById('ai-description').value;
+    
+    if (!prompt) {
+        alert('Please enter a description for the AI to generate an image');
+        return;
+    }
+    
+    // Disable the button and show loading state
+    const generateButton = document.querySelector('button[onclick="generateAIImage()"]');
+    const originalButtonText = generateButton.textContent;
+    generateButton.disabled = true;
+    generateButton.textContent = 'Generating...';
+    
+    // Show loading indicator in preview
+    document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/loading.gif') }}";
+    
+    fetch('{{ url_for("generate_ai_image") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: prompt })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button state
+        generateButton.disabled = false;
+        generateButton.textContent = originalButtonText;
+        
+        if (data.success) {
+            document.getElementById('custom-case-preview').src = data.image_path;
+            currentImagePath = data.image_path;
+            document.getElementById('add-to-cart-btn').disabled = false;
+        } else {
+            if (data.message === 'Please login to generate images') {
+                window.location.href = '{{ url_for("login") }}';
+            } else {
+                alert('Error: ' + data.message);
+                // Reset preview to default template
+                document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
             }
-            
-            fetch('{{ url_for("generate_ai_image") }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ prompt: prompt })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('custom-case-preview').src = data.image_path;
-                    currentImagePath = data.image_path;
-                    document.getElementById('add-to-cart-btn').disabled = false;
-                } else {
-                    if (data.message === 'Please login to generate images') {
-                        window.location.href = '{{ url_for("login") }}';
-                    } else {
-                        alert(data.message);
-                    }
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while generating the image.');
-            });
         }
+    })
+    .catch(error => {
+        // Reset button state
+        generateButton.disabled = false;
+        generateButton.textContent = originalButtonText;
+        
+        console.error('Error:', error);
+        document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+        alert('An error occurred while generating the image.');
+    });
+}
         
         // Cart notification function
         function showCartNotification(message = "Added to cart!") {

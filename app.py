@@ -8,6 +8,9 @@ from werkzeug.utils import secure_filename
 from PIL import Image
 from dotenv import load_dotenv
 from datetime import datetime
+import time
+import requests
+
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -436,40 +439,62 @@ def upload_image():
     
     return jsonify({'success': False, 'message': 'Invalid file type'})
 
-@app.route('/custom_case/generate', methods=['POST'])
-def generate_ai_image():
-    if not check_auth():
-        return jsonify({'success': False, 'message': 'Please login to generate images'}), 401
-    
-    user_id = session['user_id']
-    prompt = request.json.get('prompt')
-    
-    if not prompt:
-        return jsonify({'success': False, 'message': 'No prompt provided'})
-    
-    # TODO: Implement actual AI image generation
-    # For now, we'll use a placeholder image
-    placeholder_path = 'static/placeholder.png'
-    
-    # Process the image
-    output_path = paste_image_on_case_template(placeholder_path, user_id)
-    
-    # Store the generated image info in the database
-    image_data = {
-        'user_id': user_id,
-        'prompt': prompt,
-        'image_path': output_path,
-        'created_at': int(time.time())
-    }
-    
-    supabase.table('generated_images').insert(image_data).execute()
-    
-    return jsonify({
-        'success': True, 
-        'message': 'Image generated successfully',
-        'image_path': output_path
-    })
 
+@app.route('/generate_ai_image', methods=['POST'])
+def generate_ai_image():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please login to generate images'})
+    
+    try:
+        data = request.get_json()
+        prompt = data.get('prompt')
+        
+        if not prompt:
+            return jsonify({'success': False, 'message': 'No prompt provided'})
+        
+        # Hugging Face API endpoint for SDXL
+        API_URL = "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-xl-base-1.0"
+        headers = {"Authorization": f"Bearer {os.environ.get('HF_API_KEY')}"}
+        
+        # Make request to Hugging Face API
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json={"inputs": prompt}
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            return jsonify({'success': False, 'message': f'Failed to generate image: {response.text}'})
+        
+        # Save the image temporarily
+        user_id = session['user_id']
+        temp_dir = os.path.join('static', 'temp')
+        if not os.path.exists(temp_dir):
+            os.makedirs(temp_dir)
+            
+        temp_path = os.path.join(temp_dir, f"temp_{user_id}_{int(time.time())}.png")
+        
+        with open(temp_path, 'wb') as f:
+            f.write(response.content)
+        
+        # Use your existing function to paste onto template
+        try:
+            url_path = paste_image_on_case_template(temp_path, user_id)
+            
+            # Clean up temporary file
+            if os.path.exists(temp_path):
+                os.remove(temp_path)
+                
+            return jsonify({'success': True, 'image_path': url_path})
+            
+        except Exception as e:
+            print(f"Error in paste_image_on_case_template: {e}")
+            return jsonify({'success': False, 'message': f'Error processing image: {str(e)}'})
+            
+    except Exception as e:
+        print(f"Error in generate_ai_image: {e}")
+        return jsonify({'success': False, 'message': f'An error occurred while generating the image: {str(e)}'})
 
 # Order history route
 @app.route('/orders')
