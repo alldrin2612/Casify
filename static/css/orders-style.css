@@ -146,4 +146,50 @@ footer {
     margin-top: 440px;
 }
 
+/* Add these styles to your existing orders-style.css file */
 
+.buy-again-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+    margin-left: auto;
+    margin-right: 10px;
+}
+
+.buy-again-btn:hover {
+    background-color: #3e8e41;
+}
+
+.buy-again-btn:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+/* Make the order header a flex container to align the button */
+.order-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 15px;
+}
+
+.order-header h3 {
+    margin-right: auto;
+}
+
+@media screen and (max-width: 768px) {
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .buy-again-btn {
+        margin-left: 0;
+        margin-bottom: 10px;
+    }
+}

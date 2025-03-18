@@ -45,37 +45,43 @@
             {% else %}
                 <div class="orders-list">
                     {% for order in orders %}
-    <div class="order-item">
-        <div class="order-header">
-            <h3>Order #{{ order.id }}</h3>
-            <p class="order-date">{{ order.created_at|format_datetime }}</p>
-            <p class="order-status">Status: {{ order.status|upper }}</p>
-        </div>
-        <div class="order-details">
-            <p>Total: ${{ "%.2f"|format(order.total_price) }}</p>
-            <p>Shipping Address: {{ order.shipping_address }}</p>
-            <p>Payment Method: {{ order.payment_method|replace('_', ' ')|title }}</p>
-        </div>
-        <div class="order-items">
-            <h4>Items:</h4>
-            <ul>
-                {% if order.order_items and order.order_items|length > 0 %}
-                    {% for item in order.order_items %}
-                        <li>
-                            {% if item.case_type == "custom" %}
-                                Custom Case - ${{ "%.2f"|format(item.price) }}
-                            {% else %}
-                                Case {{ item.case_id }} - ${{ "%.2f"|format(item.price) }}
-                            {% endif %}
-                        </li>
+                        <div class="order-item">
+                            <div class="order-header">
+                                <h3>Order #{{ order.id }}</h3>
+                                <p class="order-date">{{ order.created_at|format_datetime }}</p>
+                                <p class="order-status">Status: {{ order.status|upper }}</p>
+                                <button class="buy-again-btn" data-order-id="{{ order.id }}">Buy Again</button>
+                            </div>
+                            <div class="order-details">
+                                <p>Total: ${{ "%.2f"|format(order.total_price) }}</p>
+                                <p>Shipping Address: {{ order.shipping_address }}</p>
+                                <p>Payment Method: {{ order.payment_method|replace('_', ' ')|title }}</p>
+                            </div>
+                            <div class="order-items">
+                                <h4>Items:</h4>
+                                <ul class="order-items-list">
+                                    {% if order.order_items and order.order_items|length > 0 %}
+                                        {% for item in order.order_items %}
+                                            <li class="order-item-entry">
+                                                {% if item.image_path %}
+                                                    <img src="{{ item.image_path }}" alt="Case Image" class="order-item-image" style="width: 100px; height: auto;">
+                                                {% endif %}
+                                                <div class="order-item-details">
+                                                    {% if item.case_type == "custom" %}
+                                                        Custom Case - ${{ "%.2f"|format(item.price) }}
+                                                    {% else %}
+                                                        Case {{ item.case_id }} - ${{ "%.2f"|format(item.price) }}
+                                                    {% endif %}
+                                                </div>
+                                            </li>
+                                        {% endfor %}
+                                    {% else %}
+                                        <li>No items found</li>
+                                    {% endif %}
+                                </ul>
+                            </div>
+                        </div>
                     {% endfor %}
-                {% else %}
-                    <li>No items found</li>
-                {% endif %}
-            </ul>
-        </div>
-    </div>
-{% endfor %}
                 </div>
             {% endif %}
         </div>
@@ -86,13 +92,57 @@
     </footer>
     
     <script>
-        // Convert timestamps to readable dates
         document.addEventListener('DOMContentLoaded', function() {
+            // Convert timestamps to readable dates
             const dateTags = document.querySelectorAll('.order-date');
             dateTags.forEach(tag => {
                 const timestamp = parseInt(tag.textContent);
-                const date = new Date(timestamp * 1000);
-                tag.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                if (!isNaN(timestamp)) {
+                    const date = new Date(timestamp * 1000);
+                    tag.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                }
+            });
+            
+            // Add buy again functionality
+            const buyAgainButtons = document.querySelectorAll('.buy-again-btn');
+            buyAgainButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const orderId = this.getAttribute('data-order-id');
+                    
+                    // Show loading state
+                    this.textContent = 'Adding...';
+                    this.disabled = true;
+                    
+                    // Send request to add items to cart
+                    fetch(`/cart/buy-again/${orderId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            // Show success message
+                            alert(data.message);
+                            // Redirect to cart
+                            window.location.href = data.redirect;
+                        } else {
+                            // Show error message
+                            alert(data.message || 'An error occurred');
+                            // Reset button
+                            this.textContent = 'Buy Again';
+                            this.disabled = false;
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('An error occurred. Please try again.');
+                        // Reset button
+                        this.textContent = 'Buy Again';
+                        this.disabled = false;
+                    });
+                });
             });
         });
     </script>

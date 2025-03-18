@@ -527,6 +527,88 @@ def order_history():
 
     return render_template('orders.html', orders=orders, user=get_user_data())
 
+@app.route('/cart/buy-again/<int:order_id>', methods=['POST'])
+def buy_again(order_id):
+    if not check_auth():
+        return jsonify({'success': False, 'message': 'Please login to add items to cart'}), 401
+    
+    user_id = session['user_id']
+    
+    # Get the order
+    order_response = supabase.table('orders').select('*').eq('id', order_id).eq('user_id', user_id).execute()
+    
+    if not order_response.data:
+        return jsonify({'success': False, 'message': 'Order not found'}), 404
+    
+    order = order_response.data[0]
+    
+    # Parse order items
+    if isinstance(order['items'], str):
+        try:
+            order_items = json.loads(order['items'])
+        except json.JSONDecodeError:
+            return jsonify({'success': False, 'message': 'Invalid order data'}), 500
+    else:
+        order_items = order['items']
+    
+    # Add each item back to cart
+    items_added = 0
+    for item in order_items:
+        # For custom cases, we need to create a new custom case entry
+        if item['case_type'] == 'custom':
+            # Create a new custom case
+            custom_case = {
+                'user_id': user_id,
+                'image_path': item['image_path'],
+                'created_at': datetime.now().isoformat()
+            }
+            
+            # Insert the custom case
+            custom_case_response = supabase.table('custom_cases').insert(custom_case).execute()
+            
+            if not custom_case_response.data:
+                continue
+            
+            # Get the ID of the newly created custom case
+            custom_case_id = custom_case_response.data[0]['id']
+            
+            # Add to cart with the new custom case ID
+            cart_item = {
+                'user_id': user_id,
+                'case_id': custom_case_id,
+                'case_type': 'custom',
+                'image_path': item['image_path'],
+                'price': item['price'],
+                'quantity': item['quantity']
+            }
+        else:
+            # For regular cases, use the original case_id
+            cart_item = {
+                'user_id': user_id,
+                'case_id': item['case_id'],
+                'case_type': item['case_type'],
+                'image_path': item.get('image_path'),
+                'price': item['price'],
+                'quantity': item['quantity']
+            }
+        
+        # Add item to cart
+        response = supabase.table('cart').insert(cart_item).execute()
+        
+        if response.data:
+            items_added += 1
+    
+    if items_added > 0:
+        return jsonify({
+            'success': True, 
+            'message': f'{items_added} items added to cart',
+            'redirect': url_for('view_cart')
+        })
+    else:
+        return jsonify({
+            'success': False, 
+            'message': 'Failed to add items to cart'
+        }), 500
 
 if __name__ == '__main__':
     app.run(debug=True)
