@@ -496,7 +496,6 @@ def generate_ai_image():
         print(f"Error in generate_ai_image: {e}")
         return jsonify({'success': False, 'message': f'An error occurred while generating the image: {str(e)}'})
 
-# Order history route
 @app.route('/orders')
 def order_history():
     if not check_auth():
@@ -516,11 +515,15 @@ def order_history():
 
     # Parse 'items' field for each order
     for order in orders:
-        if isinstance(order.get('items'), str):  # Check if items is a JSON string
-            try:
-                order['items'] = json.loads(order['items'])  # Convert to Python list
-            except json.JSONDecodeError:
-                order['items'] = []  # Default to an empty list if JSON is invalid
+        # Rename the 'items' key to 'order_items' to avoid conflict with built-in method
+        if 'items' in order:
+            if isinstance(order['items'], str):
+                try:
+                    order['order_items'] = json.loads(order['items'])
+                except json.JSONDecodeError:
+                    order['order_items'] = []
+            else:
+                order['order_items'] = order['items']
 
     return render_template('orders.html', orders=orders, user=get_user_data())
 

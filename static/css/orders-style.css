@@ -101,6 +101,30 @@ nav ul li a img {
     margin: auto;
 }
 
+.order-items-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+.order-item-entry {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+}
+
+.order-item-image {
+    margin-right: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.order-item-details {
+    flex: 1;
+}
+
 .orders-list {
     display: flex;
     flex-direction: column;

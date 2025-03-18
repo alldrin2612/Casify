@@ -45,32 +45,37 @@
             {% else %}
                 <div class="orders-list">
                     {% for order in orders %}
-                        <div class="order-item">
-                            <div class="order-header">
-                                <h3>Order #{{ order.id }}</h3>
-                                <p class="order-date">{{ order.created_at|format_datetime }}</p>
-                                <p class="order-status">Status: {{ order.status|upper }}</p>
-                            </div>
-                            <div class="order-details">
-                                <p>Total: ${{ "%.2f"|format(order.total_price) }}</p>
-                                <p>Shipping Address: {{ order.shipping_address }}</p>
-                                <p>Payment Method: {{ order.payment_method|replace('_', ' ')|title }}</p>
-                            </div>
-                            <div class="order-items">
-                                <h4>Items:</h4>
-                                {% set items = order.items if order.items is iterable else [] %}  <!-- Ensure items is iterable -->
-                                <ul>
-                                    {% for item in items %}
-                                        <li>
-                                            {{ "Custom Case" if item.case_type == "custom" else "Case " ~ item.case_id }} 
-                                            - ${{ "%.2f"|format(item.price) }}
-                                        </li>
-                                    {% endfor %}
-                                </ul>
-                            </div>
-                            
-                        </div>
+    <div class="order-item">
+        <div class="order-header">
+            <h3>Order #{{ order.id }}</h3>
+            <p class="order-date">{{ order.created_at|format_datetime }}</p>
+            <p class="order-status">Status: {{ order.status|upper }}</p>
+        </div>
+        <div class="order-details">
+            <p>Total: ${{ "%.2f"|format(order.total_price) }}</p>
+            <p>Shipping Address: {{ order.shipping_address }}</p>
+            <p>Payment Method: {{ order.payment_method|replace('_', ' ')|title }}</p>
+        </div>
+        <div class="order-items">
+            <h4>Items:</h4>
+            <ul>
+                {% if order.order_items and order.order_items|length > 0 %}
+                    {% for item in order.order_items %}
+                        <li>
+                            {% if item.case_type == "custom" %}
+                                Custom Case - ${{ "%.2f"|format(item.price) }}
+                            {% else %}
+                                Case {{ item.case_id }} - ${{ "%.2f"|format(item.price) }}
+                            {% endif %}
+                        </li>
                     {% endfor %}
+                {% else %}
+                    <li>No items found</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+{% endfor %}
                 </div>
             {% endif %}
         </div>
