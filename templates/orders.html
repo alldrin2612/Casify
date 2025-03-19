@@ -26,6 +26,12 @@
         </nav>
     </header>
     
+    <!-- Cart notification -->
+    <div id="cart-notification">
+        <div class="notification-icon">✓</div>
+        <div class="notification-message">Items added to cart</div>
+    </div>
+    
     <section class="past-orders">
         <h1>Your Past Orders</h1>
         
@@ -103,6 +109,27 @@
                 }
             });
             
+            // Notification functions
+            function showNotification(message) {
+                const notification = document.getElementById('cart-notification');
+                const messageEl = notification.querySelector('.notification-message');
+                
+                // Set message
+                messageEl.textContent = message;
+                
+                // Show notification
+                notification.classList.add('active');
+                
+                // Hide after 3 seconds
+                setTimeout(() => {
+                    notification.classList.add('fade-out');
+                    setTimeout(() => {
+                        notification.classList.remove('active');
+                        notification.classList.remove('fade-out');
+                    }, 500);
+                }, 3000);
+            }
+            
             // Add buy again functionality
             const buyAgainButtons = document.querySelectorAll('.buy-again-btn');
             buyAgainButtons.forEach(button => {
@@ -123,13 +150,21 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Show success message
-                            alert(data.message);
-                            // Redirect to cart
-                            window.location.href = data.redirect;
+                            // Show success notification instead of alert
+                            showNotification(data.message);
+                            
+                            // Reset button
+                            this.textContent = 'Buy Again';
+                            this.disabled = false;
+                            
+                            // Redirect to cart after a short delay
+                            setTimeout(() => {
+                                window.location.href = data.redirect;
+                            }, 1500);
                         } else {
-                            // Show error message
-                            alert(data.message || 'An error occurred');
+                            // Show error notification
+                            showNotification(data.message || 'An error occurred');
+                            
                             // Reset button
                             this.textContent = 'Buy Again';
                             this.disabled = false;
@@ -137,7 +172,8 @@
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        alert('An error occurred. Please try again.');
+                        showNotification('An error occurred. Please try again.');
+                        
                         // Reset button
                         this.textContent = 'Buy Again';
                         this.disabled = false;

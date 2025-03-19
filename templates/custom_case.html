@@ -4,58 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create Your Own Case - Casify</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create-style.css') }}">
-    <style>
-/* Add this to your CSS file */
-#cart-notification {
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: #ffffff;
-    color: #333333;
-    padding: 16px 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    display: flex;
-    align-items: center;
-    z-index: 1000;
-    transform: translateX(120%);
-    transition: transform 0.3s ease-in-out;
-    max-width: 300px;
-    border-left: 4px solid #4CAF50;
-  }
-  
-  #cart-notification.active {
-    transform: translateX(0);
-  }
-  
-  .notification-icon {
-    background-color: #4CAF50;
-    color: white;
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin-right: 12px;
-    font-weight: bold;
-  }
-  
-  .notification-message {
-    font-size: 16px;
-    font-weight: 500;
-  }
-  
-  /* Optional animation to make it fade out */
-  @keyframes fadeOut {
-    from { opacity: 1; }
-    to { opacity: 0; }
-  }
-  
-  #cart-notification.fade-out {
-    animation: fadeOut 0.5s forwards;
-  }
-    </style>
+    
 </head>
 <body>
     <header>
@@ -109,7 +58,38 @@
 
     <!-- Cart notification element -->
     <div id="cart-notification" class=""></div>
-
+<!-- Add this at the end of your body element but before the scripts -->
+<div class="chat-container">
+    <button class="chat-toggle-btn">
+        <img src="{{ url_for('static', filename='assets/chat-icon.png') }}" alt="Chat" class="chat-icon">
+    </button>
+    
+    <div class="chat-window">
+        <div class="chat-header">
+            <h3>Chat with Casper</h3>
+            <button class="close-chat-btn">&times;</button>
+        </div>
+        
+        <div class="chat-messages">
+            <div class="message bot-message">
+                <div class="message-avatar">
+                    <img src="{{ url_for('static', filename='assets/bot-avatar.png') }}" alt="Bot">
+                </div>
+                <div class="message-content">
+                    <p id="welcome-message">Hi{% if user %}, {{ user.first_name }}{% endif %}! How can I help you today?</p>
+                </div>
+            </div>
+            <!-- Messages will be added here dynamically -->
+        </div>
+        
+        <div class="chat-input">
+            <input type="text" id="user-message" placeholder="Type your message...">
+            <button id="send-message-btn">
+                <img src="{{ url_for('static', filename='assets/send-icon.png') }}" alt="Send">
+            </button>
+        </div>
+    </div>
+</div>
     <script>
         let currentImagePath = null;
 
@@ -265,6 +245,130 @@
                 alert('An error occurred. Please try again.');
             });
         }
+        // Add this to your script section or in a separate JS file
+
+document.addEventListener('DOMContentLoaded', function() {
+    const chatToggleBtn = document.querySelector('.chat-toggle-btn');
+    const chatWindow = document.querySelector('.chat-window');
+    const closeBtn = document.querySelector('.close-chat-btn');
+    const sendBtn = document.getElementById('send-message-btn');
+    const userInput = document.getElementById('user-message');
+    const chatMessages = document.querySelector('.chat-messages');
+    
+    // Toggle chat window
+    chatToggleBtn.addEventListener('click', function() {
+        chatWindow.classList.toggle('active');
+    });
+    
+    // Close chat window
+    closeBtn.addEventListener('click', function() {
+        chatWindow.classList.remove('active');
+    });
+    
+    // Send message when button is clicked
+    sendBtn.addEventListener('click', sendMessage);
+    
+    // Send message when Enter key is pressed
+    userInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            sendMessage();
+        }
+    });
+    
+    function sendMessage() {
+        const message = userInput.value.trim();
+        if (message) {
+            // Add user message to chat
+            addMessage(message, 'user');
+            userInput.value = '';
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Send message to backend and get response
+            fetch('/chat', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove typing indicator
+                removeTypingIndicator();
+                
+                // Add bot response to chat
+                if (data.success) {
+                    addMessage(data.response, 'bot');
+                } else {
+                    addMessage("Sorry, I couldn't process your request. Please try again.", 'bot');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                removeTypingIndicator();
+                addMessage("Sorry, there was an error. Please try again later.", 'bot');
+            });
+        }
+    }
+    
+    function addMessage(text, sender) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${sender}-message`;
+        
+        const avatarDiv = document.createElement('div');
+        avatarDiv.className = 'message-avatar';
+        
+        const avatarImg = document.createElement('img');
+        if (sender === 'bot') {
+            avatarImg.src = "{{ url_for('static', filename='assets/bot-avatar.png') }}";
+            avatarImg.alt = "Bot";
+        } else {
+            avatarImg.src = "{{ url_for('static', filename='assets/user-avatar.png') }}";
+            avatarImg.alt = "User";
+        }
+        
+        avatarDiv.appendChild(avatarImg);
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'message-content';
+        
+        const paragraph = document.createElement('p');
+        paragraph.textContent = text;
+        
+        contentDiv.appendChild(paragraph);
+        messageDiv.appendChild(avatarDiv);
+        messageDiv.appendChild(contentDiv);
+        
+        chatMessages.appendChild(messageDiv);
+        
+        // Scroll to the bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function showTypingIndicator() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'typing-indicator';
+        typingDiv.id = 'typing-indicator';
+        
+        for (let i = 0; i < 3; i++) {
+            const dot = document.createElement('div');
+            dot.className = 'typing-dot';
+            typingDiv.appendChild(dot);
+        }
+        
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+    
+    function removeTypingIndicator() {
+        const typingIndicator = document.getElementById('typing-indicator');
+        if (typingIndicator) {
+            typingIndicator.remove();
+        }
+    }
+});
     </script>
 </body>
 </html>

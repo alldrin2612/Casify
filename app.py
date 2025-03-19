@@ -610,5 +610,106 @@ def buy_again(order_id):
             'message': 'Failed to add items to cart'
         }), 500
 
+# Add this to your Flask app (app.py)
+
+@app.route('/chat', methods=['POST'])
+def chat():
+    if not check_auth():
+        return jsonify({'success': False, 'message': 'Please login to use the chat'}), 401
+    
+    try:
+        data = request.get_json()
+        user_message = data.get('message')
+        
+        if not user_message:
+            return jsonify({'success': False, 'message': 'No message provided'})
+        
+        # Get user data for personalization
+        user = get_user_data()
+        user_name = user['first_name'] if user else "there"
+        
+        # Call Hugging Face API for the assistant response
+        response = get_assistant_response(user_message, user_name)
+        
+        return jsonify({
+            'success': True,
+            'response': response
+        })
+    
+    except Exception as e:
+        print(f"Error in chat endpoint: {e}")
+        return jsonify({
+            'success': False,
+            'message': f'An error occurred: {str(e)}'
+        }), 500
+
+def get_assistant_response(user_message, user_name):
+    try:
+        # Hugging Face API endpoint for an assistant model
+        API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
+        headers = {"Authorization": f"Bearer {os.environ.get('HF_API_KEY')}"}
+        
+        # Create a prompt in the format expected by the model
+        prompt = f"""
+<s>[INST] You are Casify Assistant, a helpful and friendly assistant for the Casify phone case website. 
+Keep responses concise (2-3 sentences max) and focused on helping {user_name} with their custom phone case.
+You can help with:
+- Information about phone cases
+- Design suggestions for custom cases
+- Answering questions about shipping and pricing
+- General assistance with navigating the website
+
+User: {user_message} [/INST]</s>
+"""
+        
+        # Make request to Hugging Face API
+        response = requests.post(
+            API_URL,
+            headers=headers,
+            json={"inputs": prompt, "parameters": {"max_new_tokens": 150, "temperature": 0.7}}
+        )
+        
+        # Check if the request was successful
+        if response.status_code != 200:
+            print(f"Error from Hugging Face API: {response.text}")
+            return "I'm having trouble connecting to my brain. Please try again in a moment."
+        
+        # Parse the response
+        result = response.json()
+        
+        # Extract the model's response from the result
+        if isinstance(result, list) and len(result) > 0:
+            # The response format may vary depending on the model
+            if isinstance(result[0], dict) and "generated_text" in result[0]:
+                assistant_response = result[0]["generated_text"]
+            else:
+                assistant_response = str(result[0])
+        elif isinstance(result, dict) and "generated_text" in result:
+            assistant_response = result["generated_text"]
+        else:
+            assistant_response = str(result)
+        
+        # Clean up the response to extract only the assistant's part
+        # This depends on the specific model's output format
+        # For Mistral-7B-Instruct, we need to extract the text after the prompt
+        if assistant_response.startswith("<s>"):
+            # Find where the instruction ends
+            end_idx = assistant_response.find("</s>")
+            if end_idx == -1:
+                end_idx = len(assistant_response)
+            
+            # Extract everything after the instruction part
+            inst_end = assistant_response.find("[/INST]")
+            if inst_end != -1:
+                assistant_response = assistant_response[inst_end + 7:end_idx].strip()
+            else:
+                assistant_response = "I couldn't generate a proper response. Please try again."
+        
+        return assistant_response
+    
+    except Exception as e:
+        print(f"Error getting assistant response: {e}")
+        return "Sorry, I'm having some technical difficulties right now. Please try again later."
+    
 if __name__ == '__main__':
     app.run(debug=True)
