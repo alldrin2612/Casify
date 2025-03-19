@@ -99,7 +99,7 @@
         <div class="preview-section">
             <h2>Preview Your Custom Case</h2>
             <img id="custom-case-preview" src="{{ url_for('static', filename='assets/templatewhite.png') }}" alt="Custom Case Preview">
-            <button id="add-to-cart-btn" onclick="addCustomCaseToCart()" disabled>Add to Cart - $30.00</button>
+            <button id="add-to-cart-btn" onclick="addCustomCaseToCart()" disabled>Add to Cart - $50.00</button>
         </div>
     </section>
     
@@ -243,7 +243,7 @@
                 body: JSON.stringify({
                     case_type: 'custom',
                     image_path: currentImagePath,
-                    price: 30.00,
+                    price: 50.00,
                     quantity: 1
                 })
             })
