@@ -45,23 +45,25 @@
             {% endif %}
         {% endwith %}
         
+        <!-- Order navigation will be inserted here via JavaScript -->
+        
         <div class="orders-container">
             {% if orders|length == 0 %}
                 <p id="no-orders-message">You have no past orders.</p>
             {% else %}
                 <div class="orders-list">
                     {% for order in orders %}
-                        <div class="order-item">
+                        <div class="order-item" id="order-{{ loop.index }}">
                             <div class="order-header">
                                 <h3>Order #{{ order.id }}</h3>
                                 <p class="order-date">{{ order.created_at|format_datetime }}</p>
-                                <p class="order-status">Status: {{ order.status|upper }}</p>
+                                <p class="order-status">{{ order.status|upper }}</p>
                                 <button class="buy-again-btn" data-order-id="{{ order.id }}">Buy Again</button>
                             </div>
                             <div class="order-details">
-                                <p>Total: ${{ "%.2f"|format(order.total_price) }}</p>
-                                <p>Shipping Address: {{ order.shipping_address }}</p>
-                                <p>Payment Method: {{ order.payment_method|replace('_', ' ')|title }}</p>
+                                <p><strong>Total:</strong> ${{ "%.2f"|format(order.total_price) }}</p>
+                                <p><strong>Shipping:</strong> {{ order.shipping_address }}</p>
+                                <p><strong>Payment:</strong> {{ order.payment_method|replace('_', ' ')|title }}</p>
                             </div>
                             <div class="order-items">
                                 <h4>Items:</h4>
@@ -70,13 +72,15 @@
                                         {% for item in order.order_items %}
                                             <li class="order-item-entry">
                                                 {% if item.image_path %}
-                                                    <img src="{{ item.image_path }}" alt="Case Image" class="order-item-image" style="width: 100px; height: auto;">
+                                                    <img src="{{ item.image_path }}" alt="Case Image" class="order-item-image">
                                                 {% endif %}
                                                 <div class="order-item-details">
                                                     {% if item.case_type == "custom" %}
-                                                        Custom Case - ${{ "%.2f"|format(item.price) }}
+                                                        <p class="item-name">Custom Case</p>
+                                                        <p class="item-price">${{ "%.2f"|format(item.price) }}</p>
                                                     {% else %}
-                                                        Case {{ item.case_id }} - ${{ "%.2f"|format(item.price) }}
+                                                        <p class="item-name">Case {{ item.case_id }}</p>
+                                                        <p class="item-price">${{ "%.2f"|format(item.price) }}</p>
                                                     {% endif %}
                                                 </div>
                                             </li>
@@ -93,6 +97,9 @@
         </div>
     </section>
     
+    <!-- Back to top button -->
+    <div class="back-to-top">↑</div>
+    
     <footer>
         <p>&copy; 2025 Casify. All Rights Reserved.</p>
     </footer>
@@ -106,6 +113,19 @@
                 if (!isNaN(timestamp)) {
                     const date = new Date(timestamp * 1000);
                     tag.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+                }
+            });
+            
+            // Add status color classes
+            const statusTags = document.querySelectorAll('.order-status');
+            statusTags.forEach(tag => {
+                const status = tag.textContent.toLowerCase();
+                if (status.includes('delivered')) {
+                    tag.classList.add('delivered');
+                } else if (status.includes('processing')) {
+                    tag.classList.add('processing');
+                } else if (status.includes('shipped')) {
+                    tag.classList.add('shipped');
                 }
             });
             
@@ -137,7 +157,7 @@
                     const orderId = this.getAttribute('data-order-id');
                     
                     // Show loading state
-                    this.textContent = 'Adding...';
+                    this.innerHTML = '<span class="loading-spinner"></span>Adding...';
                     this.disabled = true;
                     
                     // Send request to add items to cart
@@ -150,7 +170,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
-                            // Show success notification instead of alert
+                            // Show success notification
                             showNotification(data.message);
                             
                             // Reset button
@@ -180,7 +200,68 @@
                     });
                 });
             });
+            
+            // Add order navigation
+            const orderItems = document.querySelectorAll('.order-item');
+            if (orderItems.length > 1) {
+                createOrderNavigation(orderItems);
+            }
+            
+            // Back to top functionality
+            const backToTopButton = document.querySelector('.back-to-top');
+            
+            window.addEventListener('scroll', () => {
+                if (window.scrollY > 300) {
+                    backToTopButton.classList.add('visible');
+                } else {
+                    backToTopButton.classList.remove('visible');
+                }
+            });
+            
+            backToTopButton.addEventListener('click', () => {
+                window.scrollTo({
+                    top: 0,
+                    behavior: 'smooth'
+                });
+            });
         });
+        
+        // Create order navigation
+        function createOrderNavigation(orderItems) {
+            const navigation = document.createElement('div');
+            navigation.className = 'orders-navigation';
+            
+            const navContent = document.createElement('div');
+            navContent.className = 'orders-navigation-content';
+            
+            const navTitle = document.createElement('h3');
+            navTitle.textContent = 'Order Navigation';
+            navContent.appendChild(navTitle);
+            
+            const navList = document.createElement('ul');
+            navList.className = 'orders-navigation-list';
+            
+            orderItems.forEach((item) => {
+                const orderId = item.querySelector('.order-header h3').textContent;
+                const navItem = document.createElement('li');
+                const navLink = document.createElement('a');
+                navLink.href = `#${item.id}`;
+                navLink.textContent = orderId;
+                navLink.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    item.scrollIntoView({ behavior: 'smooth' });
+                });
+                navItem.appendChild(navLink);
+                navList.appendChild(navItem);
+            });
+            
+            navContent.appendChild(navList);
+            navigation.appendChild(navContent);
+            
+            // Insert the navigation before the orders container
+            const ordersContainer = document.querySelector('.orders-container');
+            ordersContainer.parentNode.insertBefore(navigation, ordersContainer);
+        }
     </script>
 </body>
 </html>

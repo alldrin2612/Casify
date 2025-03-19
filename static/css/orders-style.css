@@ -243,3 +243,286 @@ footer {
 #cart-notification.fade-out {
     animation: fadeOut 0.5s forwards;
 }
+
+/* Enhanced Order Partitioning Styles */
+
+/* Improve order item separation */
+.order-item {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    margin-bottom: 30px;
+    overflow: hidden;
+    border: 1px solid #e0e0e0;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.order-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+/* Order Header styling */
+.order-header {
+    background-color: #f8f9fa;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.order-header h3 {
+    color: #333;
+    font-size: 18px;
+    margin-right: auto;
+    font-weight: 600;
+}
+
+.order-status {
+    font-weight: 600;
+    padding: 5px 10px;
+    border-radius: 20px;
+    font-size: 14px;
+    white-space: nowrap;
+}
+
+/* Status colors */
+.order-status.delivered {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+.order-status.processing {
+    background-color: #e3f2fd;
+    color: #1565c0;
+}
+
+.order-status.shipped {
+    background-color: #fff8e1;
+    color: #f57f17;
+}
+
+.order-date {
+    color: #666;
+    font-size: 14px;
+}
+
+/* Order Details */
+.order-details {
+    padding: 16px 20px;
+    text-align: left;
+    border-bottom: 1px solid #f0f0f0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.order-details p {
+    margin: 0;
+    font-size: 15px;
+    color: #555;
+}
+
+/* Order Items */
+.order-items {
+    padding: 16px 20px;
+    text-align: left;
+}
+
+.order-items h4 {
+    margin-bottom: 15px;
+    font-size: 16px;
+    color: #333;
+}
+
+.order-items-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 15px;
+}
+
+.order-item-entry {
+    background-color: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+}
+
+.order-item-image {
+    border-radius: 8px;
+    overflow: hidden;
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    margin-right: 15px;
+    border: 1px solid #eee;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .order-details {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-items-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .order-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .buy-again-btn {
+        margin-left: 0;
+        width: 100%;
+    }
+}
+
+/* Enhance the buy again button */
+.buy-again-btn {
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.buy-again-btn:hover {
+    background-color: #3e8e41;
+    transform: translateY(-2px);
+}
+
+.buy-again-btn:active {
+    transform: translateY(0);
+}
+
+/* Improve notification styling */
+#cart-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #ffffff;
+    color: #333333;
+    padding: 16px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    display: flex;
+    align-items: center;
+    z-index: 1000;
+    transform: translateX(120%);
+    transition: transform 0.3s ease-in-out, opacity 0.5s ease;
+    max-width: 320px;
+    border-left: 4px solid #4CAF50;
+}
+/* Order Navigation Styles */
+.orders-navigation {
+    background-color: #ffffff;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    max-width: 800px;
+    margin: 0 auto 20px auto;
+}
+
+.orders-navigation-content {
+    text-align: left;
+}
+
+.orders-navigation-content h3 {
+    margin-bottom: 15px;
+    font-size: 18px;
+    color: #333;
+}
+
+.orders-navigation-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    list-style: none;
+    padding: 0;
+}
+
+.orders-navigation-list li a {
+    display: block;
+    padding: 8px 16px;
+    background-color: #f0f0f0;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.orders-navigation-list li a:hover {
+    background-color: #e0e0e0;
+    transform: translateY(-2px);
+}
+
+.orders-navigation-list li a:active {
+    transform: translateY(0);
+}
+
+/* Loading spinner for buy again button */
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Back to top button */
+.back-to-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 100;
+}
+
+.back-to-top.visible {
+    opacity: 1;
+}
+
+.back-to-top:hover {
+    background-color: #3e8e41;
+}
+
+/* Order item divider */
+.order-item:not(:last-child):after {
+    content: '';
+    display: block;
+    height: 30px;
+    background-image: linear-gradient(to right, transparent, #00bfff68, transparent);
+    margin: 0 auto;
+    width: 100%;
+    max-width: 700px;
+}
