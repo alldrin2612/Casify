@@ -364,14 +364,16 @@ def paste_image_on_case_template(image_path, user_id):
         # Open the case template
         case_template = Image.open('static/assets/templatewhite.png')
         
-        # Resize the user image to fit the case template's dimensions
-        user_image = user_image.resize((case_template.width - 40, case_template.height - 80))
+        # Resize the user image to completely fill the case template's dimensions
+        user_image = user_image.resize(case_template.size)
         
         # Create a new image with the same size as the template
         final_image = Image.new('RGBA', case_template.size)
         
-        # Paste the user image onto the case template
-        final_image.paste(user_image, (20, 40))
+        # Paste the user image onto the final image
+        final_image.paste(user_image, (0, 0))
+        
+        # Paste the template on top with alpha support
         final_image.paste(case_template, (0, 0), case_template)
         
         # Save the final image
