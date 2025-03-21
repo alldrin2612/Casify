@@ -71,8 +71,7 @@ nav ul li a img {
     height: 24px;
 }
 
-/* Hero Section CSS */
-/* Hero Section CSS with Dramatic Flip Animation */
+/* Hero Section CSS with Continuous Motion Animation */
 .hero {
     background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 50%, #7e3cd6 100%);
     min-height: 600px;
@@ -151,27 +150,11 @@ nav ul li a img {
     flex: 0 0 40%;
     display: flex;
     justify-content: center;
-    perspective: 1200px; /* Stronger perspective for dramatic effect */
+    perspective: 1200px;
 }
 
-.hero-image img {
-    max-width: 100%;
-    height: auto;
-    max-height: 550px;
-    transform: rotate(-15deg) rotateY(0deg); /* Start with more tilt */
-    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
-    transition: transform 0.7s cubic-bezier(0.3, 1, 0.3, 1); /* Custom easing */
-    transform-style: preserve-3d;
-}
-
-/* Dramatic flip on hover */
-.hero-image img:hover {
-    transform: rotate(15deg) rotateY(180deg) scale(1.1); /* Full horizontal flip with scale */
-    filter: drop-shadow(-20px 20px 30px rgba(0, 0, 0, 0.4));
-}
-
-/* Add subtle animation when not hovering */
-@keyframes tilt {
+/* Default animation - gentle tilt */
+@keyframes gentle-tilt {
     0% {
         transform: rotate(-15deg) rotateY(0deg);
     }
@@ -183,12 +166,37 @@ nav ul li a img {
     }
 }
 
+/* Hover animation - dramatic flip */
+@keyframes dramatic-flip {
+    0% {
+        transform: rotate(15deg) rotateY(0deg) scale(1.05);
+    }
+    25% {
+        transform: rotate(-5deg) rotateY(90deg) scale(1.1);
+    }
+    50% {
+        transform: rotate(-15deg) rotateY(180deg) scale(1.15);
+    }
+    75% {
+        transform: rotate(5deg) rotateY(270deg) scale(1.1);
+    }
+    100% {
+        transform: rotate(15deg) rotateY(360deg) scale(1.05);
+    }
+}
+
 .hero-image img {
-    animation: tilt 5s ease-in-out infinite;
+    max-width: 100%;
+    height: auto;
+    max-height: 550px;
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
+    transform-style: preserve-3d;
+    animation: gentle-tilt 5s ease-in-out infinite;
 }
 
 .hero-image img:hover {
-    animation-play-state: paused;
+    animation: dramatic-flip 3s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+    filter: drop-shadow(0 20px 30px rgba(0, 0, 0, 0.4)) brightness(1.05);
 }
 
 /* Media Queries for Responsiveness */
@@ -257,6 +265,7 @@ nav ul li a img {
         font-size: 16px;
     }
 }
+
 /* Best Selling Section */
 .best-selling {
     padding: 60px;
