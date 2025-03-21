@@ -26,24 +26,25 @@
         </nav>
     </header>
     
-    <section class="hero">
+<!-- Hero Section HTML -->
+<section class="hero">
+    <div class="hero-content">
         <div class="hero-text">
-            <h1>Welcome to CASIFY</h1>
-            <p>Express your style with Casify's premium quality, fully customizable phone cases.</p>
-            <ul>
+            <h1>Welcome to <span class="highlight">CASIFY</span></h1>
+            <p class="tagline">Express your style with Casify's premium quality, fully customizable phone cases.</p>
+            <ul class="hero-features">
                 <li>Military-grade drop protection up to 10 feet</li>
                 <li>High Quality cases with upto 5 year warranty</li>
                 <li>Choose from the best selling cases created by our designers</li>
                 <li>Use AI image generation to create unique designs or Upload your own photos for a personal touch</li>
                 <li>Fast shipping</li>
             </ul>
-            
-            <p>Express yourself while giving your phone the protection it deserves.</p>
         </div>
         <div class="hero-image">
             <img src="{{ url_for('static', filename='assets/custom-case.png') }}" alt="Custom Phone Case">
         </div>
-    </section>
+    </div>
+</section>
     
     <section class="best-selling">
         <h2>Best Selling Cases</h2>

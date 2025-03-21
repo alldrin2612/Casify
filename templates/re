@@ -1,0 +1,9 @@
+.hero {
+    background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 50%, #7e3cd6 100%);
+    min-height: 600px;
+    display: flex;
+    align-items: center;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}

@@ -71,44 +71,192 @@ nav ul li a img {
     height: 24px;
 }
 
-/* Hero Section */
+/* Hero Section CSS */
+/* Hero Section CSS with Dramatic Flip Animation */
 .hero {
+    background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 50%, #7e3cd6 100%);
+    min-height: 600px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 80px 10%;
-    background: #00bfff68;
-    animation: fadeInUp 0.8s ease-out;
+    padding: 0;
+    overflow: hidden;
+    position: relative;
+}
+
+.hero-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1400px;
+    margin: 0 auto;
+    width: 100%;
+    padding: 0 5%;
+    position: relative;
+    z-index: 2;
 }
 
 .hero-text {
-    max-width: 50%;
+    max-width: 600px;
     text-align: left;
+    color: #fff;
+    padding: 60px 0;
 }
 
 .hero-text h1 {
-    font-size: 48px;
-    margin-bottom: 15px;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+    font-size: 70px;
+    font-weight: 700;
+    line-height: 1.1;
+    margin-bottom: 20px;
+    font-family: 'Montserrat', sans-serif;
 }
 
-.hero-text p {
-    font-size: 22px;
-    color: #666;
-    margin-bottom: 20px;
+.hero-text .highlight {
+    display: block;
+    font-size: 100px;
+}
+
+.hero-text .tagline {
+    font-size: 24px;
+    margin-bottom: 30px;
+    line-height: 1.4;
+    color: #fff;
+}
+
+.hero-features {
+    list-style-type: none;
+    padding: 0;
+    margin-bottom: 30px;
+}
+
+.hero-features li {
+    position: relative;
+    padding-left: 25px;
+    margin-bottom: 12px;
+    color: #fff;
+    font-size: 18px;
+    line-height: 1.5;
+}
+
+.hero-features li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    top: 0;
+    color: #fff;
+    font-size: 20px;
+    line-height: 1.5;
+}
+
+.hero-image {
+    flex: 0 0 40%;
+    display: flex;
+    justify-content: center;
+    perspective: 1200px; /* Stronger perspective for dramatic effect */
 }
 
 .hero-image img {
-    width: 350px;
-    border-radius: 10px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
-    transition: transform 0.3s ease;
+    max-width: 100%;
+    height: auto;
+    max-height: 550px;
+    transform: rotate(-15deg) rotateY(0deg); /* Start with more tilt */
+    filter: drop-shadow(0 15px 25px rgba(0, 0, 0, 0.3));
+    transition: transform 0.7s cubic-bezier(0.3, 1, 0.3, 1); /* Custom easing */
+    transform-style: preserve-3d;
+}
+
+/* Dramatic flip on hover */
+.hero-image img:hover {
+    transform: rotate(15deg) rotateY(180deg) scale(1.1); /* Full horizontal flip with scale */
+    filter: drop-shadow(-20px 20px 30px rgba(0, 0, 0, 0.4));
+}
+
+/* Add subtle animation when not hovering */
+@keyframes tilt {
+    0% {
+        transform: rotate(-15deg) rotateY(0deg);
+    }
+    50% {
+        transform: rotate(-5deg) rotateY(10deg);
+    }
+    100% {
+        transform: rotate(-15deg) rotateY(0deg);
+    }
+}
+
+.hero-image img {
+    animation: tilt 5s ease-in-out infinite;
 }
 
 .hero-image img:hover {
-    transform: scale(1.05);
+    animation-play-state: paused;
 }
 
+/* Media Queries for Responsiveness */
+@media (max-width: 1024px) {
+    .hero-text h1 {
+        font-size: 60px;
+    }
+    
+    .hero-text .highlight {
+        font-size: 80px;
+    }
+    
+    .hero-text .tagline {
+        font-size: 22px;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-content {
+        flex-direction: column;
+        text-align: center;
+        padding: 40px 20px;
+    }
+    
+    .hero-text {
+        text-align: center;
+        max-width: 100%;
+        padding: 30px 0;
+    }
+    
+    .hero-text h1 {
+        font-size: 50px;
+    }
+    
+    .hero-text .highlight {
+        font-size: 70px;
+    }
+    
+    .hero-features li {
+        text-align: left;
+    }
+    
+    .hero-image {
+        margin-top: 30px;
+    }
+    
+    .hero-image img {
+        max-height: 400px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-text h1 {
+        font-size: 40px;
+    }
+    
+    .hero-text .highlight {
+        font-size: 50px;
+    }
+    
+    .hero-text .tagline {
+        font-size: 18px;
+    }
+    
+    .hero-features li {
+        font-size: 16px;
+    }
+}
 /* Best Selling Section */
 .best-selling {
     padding: 60px;
