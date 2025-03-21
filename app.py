@@ -653,65 +653,101 @@ def get_assistant_response(user_message, user_name):
         
         # Create a prompt in the format expected by the model
         prompt = f"""
-<s>[INST] You are Casify Assistant, a helpful and friendly assistant for the Casify phone case website. 
-Keep responses concise (2-3 sentences max) and focused on helping {user_name} with their custom phone case.
-You can help with:
-- Information about phone cases
-- Design suggestions for custom cases
-- Answering questions about shipping and pricing
-- General assistance with navigating the website
+<s>[INST] You are Casper, a knowledgeable AI assistant for the Casify phone case website.
+Instructions:
+1. Provide direct, precise answers limited to 1-2 sentences.
+2. Focus exclusively on custom phone cases and related information.
+3. Omit phrases like "let me know if you need anything else" or "is there anything else".
+4. Use a friendly but efficient tone.
+5. Include specific details when answering about:
+   - Available case types (slim, rugged, wallet, etc.)
+   - Customization options (photos, designs, text)
+   - Material quality (polycarbonate, silicone, etc.)
+   - Shipping times (standard: 5-7 days, express: 2-3 days)
+   - Price ranges ($19.99-$39.99 based on case type)
+   - Return policy (30-day satisfaction guarantee)
 
-User: {user_message} [/INST]</s>
+User query from {user_name}: {user_message} [/INST]
 """
         
-        # Make request to Hugging Face API
+        # Make request to Hugging Face API with optimized parameters
         response = requests.post(
             API_URL,
             headers=headers,
-            json={"inputs": prompt, "parameters": {"max_new_tokens": 150, "temperature": 0.7}}
+            json={
+                "inputs": prompt, 
+                "parameters": {
+                    "max_new_tokens": 100,  # Reduced for conciseness
+                    "temperature": 0.5,     # Lower for more focused responses
+                    "top_p": 0.85,          # More focused token selection
+                    "do_sample": True       # Enable sampling for natural responses
+                }
+            }
         )
         
         # Check if the request was successful
         if response.status_code != 200:
             print(f"Error from Hugging Face API: {response.text}")
-            return "I'm having trouble connecting to my brain. Please try again in a moment."
+            return "Connection issue. Try again soon."
         
         # Parse the response
         result = response.json()
         
         # Extract the model's response from the result
+        assistant_response = ""
         if isinstance(result, list) and len(result) > 0:
-            # The response format may vary depending on the model
             if isinstance(result[0], dict) and "generated_text" in result[0]:
-                assistant_response = result[0]["generated_text"]
+                full_text = result[0]["generated_text"]
+                inst_end = full_text.find("[/INST]")
+                if inst_end != -1:
+                    assistant_response = full_text[inst_end + 7:].strip()
+                    if assistant_response.endswith("</s>"):
+                        assistant_response = assistant_response[:-4].strip()
             else:
-                assistant_response = str(result[0])
+                full_text = str(result[0])
+                inst_end = full_text.find("[/INST]")
+                if inst_end != -1:
+                    assistant_response = full_text[inst_end + 7:].strip()
+                    if assistant_response.endswith("</s>"):
+                        assistant_response = assistant_response[:-4].strip()
         elif isinstance(result, dict) and "generated_text" in result:
-            assistant_response = result["generated_text"]
-        else:
-            assistant_response = str(result)
-        
-        # Clean up the response to extract only the assistant's part
-        # This depends on the specific model's output format
-        # For Mistral-7B-Instruct, we need to extract the text after the prompt
-        if assistant_response.startswith("<s>"):
-            # Find where the instruction ends
-            end_idx = assistant_response.find("</s>")
-            if end_idx == -1:
-                end_idx = len(assistant_response)
-            
-            # Extract everything after the instruction part
-            inst_end = assistant_response.find("[/INST]")
+            full_text = result["generated_text"]
+            inst_end = full_text.find("[/INST]")
             if inst_end != -1:
-                assistant_response = assistant_response[inst_end + 7:end_idx].strip()
-            else:
-                assistant_response = "I couldn't generate a proper response. Please try again."
+                assistant_response = full_text[inst_end + 7:].strip()
+                if assistant_response.endswith("</s>"):
+                    assistant_response = assistant_response[:-4].strip()
         
-        return assistant_response
+        # Post-process the response to ensure it's concise
+        if assistant_response:
+            # Remove any filler phrases
+            filler_phrases = [
+                "let me know if you need anything else",
+                "is there anything else",
+                "is there anything else i can help you with",
+                "feel free to ask",
+                "don't hesitate to ask",
+                "happy to help",
+                "hope that helps"
+            ]
+            
+            for phrase in filler_phrases:
+                assistant_response = re.sub(f"(?i){phrase}.*", "", assistant_response)
+            
+            # Trim any extra whitespace
+            assistant_response = assistant_response.strip()
+            
+            # If empty after cleaning, provide fallback
+            if not assistant_response:
+                return "I can help with your custom phone case needs."
+                
+            return assistant_response
+        
+        return "I can help with your custom phone case query."
     
     except Exception as e:
         print(f"Error getting assistant response: {e}")
-        return "Sorry, I'm having some technical difficulties right now. Please try again later."
+        return "Technical issue. Please try again."
     
 if __name__ == '__main__':
     app.run(debug=True)

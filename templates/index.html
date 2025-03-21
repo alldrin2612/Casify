@@ -105,13 +105,26 @@
         <ul>
             <li>High Quality Case with Scratch and Fingerprint Resistant Coating</li>
             <li>Upload your own image or use our AI Image Generator</li>
-            <li>Out of Ideas use our Assistant Casper to help you design your case</li>
+            <li>Out of Ideas? Use our Assistant Casper to help design your case</li>
             <li>5 Year Warranty</li>
             <li>Fast shipping</li>
         </ul>
+        
+        <div class="case-images">
+            <div class="responsive-image">
+                <img src="{{ url_for('static', filename='assets/image.jpg') }}" alt="Custom Case Example 1">
+            </div>
+            <div class="static-image">
+                <img src="{{ url_for('static', filename='assets/arrow.png') }}" alt="Custom Case Example 2">
+            </div>
+            <div class="responsive-image">
+                <img src="{{ url_for('static', filename='assets/custom.png') }}" alt="Custom Case Example 3">
+            </div>
+        </div>
+        
         <a href="{{ url_for('custom_case') }}" class="custom-btn">Get Started</a>
     </section>
-    
+
     <footer>
         <p>&copy; 2025 Casify. All Rights Reserved.</p>
     </footer>
