@@ -652,36 +652,33 @@ def get_assistant_response(user_message, user_name):
         API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
         headers = {"Authorization": f"Bearer {os.environ.get('HF_API_KEY')}"}
         
-        # Create a prompt in the format expected by the model
+        # Create a prompt in the format expected by the model - maintaining Casper but making him more versatile
         prompt = f"""
-<s>[INST] You are Casper, a knowledgeable AI assistant for the Casify phone case website.
+<s>[INST] You are Casper, a smart and creative AI assistant who provides concise, thoughtful responses.
 Instructions:
-1. Provide direct, precise answers limited to 1-2 sentences.
-2. Focus exclusively on custom phone cases and related information.
-3. Omit phrases like "let me know if you need anything else" or "is there anything else".
-4. Use a friendly but efficient tone.
-5. Include specific details when answering about:
-   - Available case types (slim, rugged, wallet, etc.)
-   - Customization options (photos, designs, text)
-   - Material quality (polycarbonate, silicone, etc.)
-   - Shipping times (standard: 5-7 days, express: 2-3 days)
-   - Price ranges ($19.99-$39.99 based on case type)
-   - Return policy (30-day satisfaction guarantee)
+1. Keep your responses brief and to the point (typically 1-3 sentences).
+2. Be creative and thoughtful in your answers.
+3. Don't use unnecessary preambles or closings.
+4. Provide direct, helpful information with a friendly tone.
+5. If you don't know something, briefly acknowledge it rather than making up information.
+6. When appropriate, use clever analogies or examples to explain complex concepts simply.
+7. Balance brevity with helpfulness - prioritize quality information over wordiness.
 
 User query from {user_name}: {user_message} [/INST]
 """
         
-        # Make request to Hugging Face API with optimized parameters
+        # Make request to Hugging Face API with parameters optimized for concise but smart responses
         response = requests.post(
             API_URL,
             headers=headers,
             json={
                 "inputs": prompt, 
                 "parameters": {
-                    "max_new_tokens": 100,  # Reduced for conciseness
-                    "temperature": 0.5,     # Lower for more focused responses
-                    "top_p": 0.85,          # More focused token selection
-                    "do_sample": True       # Enable sampling for natural responses
+                    "max_new_tokens": 150,  # Limited for conciseness but enough for smart responses
+                    "temperature": 0.65,    # Balanced for creativity while staying focused
+                    "top_p": 0.88,          # Slightly diverse token selection
+                    "do_sample": True,      # Enable sampling for natural responses
+                    "repetition_penalty": 1.15  # Stronger discouragement of repetitive text
                 }
             }
         )
@@ -719,32 +716,34 @@ User query from {user_name}: {user_message} [/INST]
                 if assistant_response.endswith("</s>"):
                     assistant_response = assistant_response[:-4].strip()
         
-        # Post-process the response to ensure it's concise
+        # Post-process to ensure conciseness - trim lengthy responses
         if assistant_response:
-            # Remove any filler phrases
-            filler_phrases = [
-                "let me know if you need anything else",
-                "is there anything else",
-                "is there anything else i can help you with",
+            # Split into sentences and limit if necessary
+            sentences = re.split(r'(?<=[.!?])\s+', assistant_response)
+            if len(sentences) > 3:
+                assistant_response = ' '.join(sentences[:3])
+            
+            # Remove any common closing phrases
+            closing_phrases = [
+                "hope that helps",
+                "let me know if you need more information",
                 "feel free to ask",
-                "don't hesitate to ask",
-                "happy to help",
-                "hope that helps"
+                "is there anything else"
             ]
             
-            for phrase in filler_phrases:
+            for phrase in closing_phrases:
                 assistant_response = re.sub(f"(?i){phrase}.*", "", assistant_response)
-            
+                
             # Trim any extra whitespace
             assistant_response = assistant_response.strip()
             
             # If empty after cleaning, provide fallback
             if not assistant_response:
-                return "I can help with your custom phone case needs."
+                return "I can help with that succinctly."
                 
             return assistant_response
         
-        return "I can help with your custom phone case query."
+        return "I'll help with that briefly."
     
     except Exception as e:
         print(f"Error getting assistant response: {e}")
