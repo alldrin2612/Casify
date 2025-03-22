@@ -543,3 +543,34 @@ footer {
     background: #0056b3;
     transform: scale(1.05);
 }
+.custom-case {
+    padding: 60px;
+    background: #00bfff68;
+    animation: fadeInUp 0.8s ease-out;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Adjust the case-images to display in a column or row below text */
+.case-images {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin: 40px 0 20px 0; /* Add more top margin to separate from text */
+    width: 100%;
+    flex-wrap: wrap; /* Allow wrapping on smaller screens */
+}
+
+/* Make sure text elements have proper centering */
+.custom-case h2,
+.custom-case p,
+.custom-case ul {
+    text-align: center;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
