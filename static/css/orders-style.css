@@ -10,7 +10,8 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-image: radial-gradient(circle at center, #ffffff7b, rgba(124, 255, 253, 0.498), #60ffea78);
+    background-color: #909eae;
+    background-image: linear-gradient(147deg, #909eae 0%, #a7a6ba 74%);    
     color: #333;
     line-height: 1.6;
 }

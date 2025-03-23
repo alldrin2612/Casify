@@ -10,7 +10,8 @@
 
 body {
     font-family: 'Poppins', sans-serif;
-    background-image: radial-gradient(circle at center, #ffffff7b, rgba(124, 255, 253, 0.498), #60ffea78);
+    background-color: #909eae;
+    background-image: linear-gradient(147deg, #909eae 0%, #a7a6ba 74%);      
     color: #333;
     line-height: 1.6;
 }
@@ -101,7 +102,7 @@ nav ul li a i {
 
 .create-case p {
     font-size: 18px;
-    color: #666;
+    color: #ffffff;
     margin-bottom: 40px;
 }
 
@@ -434,8 +435,8 @@ button[onclick="generateAIImage()"].loading {
 /* Footer - centered adjustments */
 footer {
     padding: 25px;
-    background: #333;
-    color: #fff;
+    background: #ffffff;
+    color: #000000;
     text-align: center;
     margin-top: 60px;
 }
