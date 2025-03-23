@@ -45,7 +45,7 @@ Casify is a modern e-commerce platform specializing in custom phone cases. Users
 
 - **APIs**
   - Hugging Face API (AI Image Generation)
-  - OpenAI API (Chat Assistant)
+  - Hugging Face API (Chat Bot Casper)
 
 ## Prerequisites
 
@@ -80,7 +80,6 @@ pip install -r requirements.txt
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 HF_API_KEY=your_huggingface_api_key
-OPENAI_API_KEY=your_openai_api_key
 ```
 
 ## Running the Application
