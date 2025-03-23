@@ -411,13 +411,12 @@ img[src$="case6.png"]:hover {
     transform: scale(1.05);
 }
 
-/* Footer */
 footer {
     padding: 25px;
     background: #333;
     color: #fff;
     text-align: center;
-    margin-top: 60px;
+    margin-top: 0; /* Changed from 60px to 0 */
 }
 
 .footer-content {
@@ -430,19 +429,16 @@ footer {
     gap: 15px;
 }
 
-/* Remove any potential space above footer */
 body {
-    padding-bottom: 60px; /* Space for the fixed footer */
-    margin: 0; /* Ensure body has no margin */
-}
-
-/* Ensure there's no gap in any parent containers */
-html, body {
-    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
     margin: 0;
-    padding: 0;
 }
 
+main {
+    flex-grow: 1;
+}
 /* Fade-in Animation */
 @keyframes fadeInUp {
     from {
