@@ -435,8 +435,8 @@ button[onclick="generateAIImage()"].loading {
 /* Footer - centered adjustments */
 footer {
     padding: 25px;
-    background: #ffffff;
-    color: #000000;
+    background: #333;
+    color: #ffffff;
     text-align: center;
     margin-top: 60px;
 }
