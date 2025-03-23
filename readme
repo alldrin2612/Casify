@@ -55,7 +55,6 @@ Before running the application, make sure you have:
 - pip (Python package manager)
 - A Supabase account
 - Hugging Face API key
-- OpenAI API key
 
 ## Installation
 
