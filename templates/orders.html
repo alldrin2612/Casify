@@ -106,16 +106,6 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Convert timestamps to readable dates
-            const dateTags = document.querySelectorAll('.order-date');
-            dateTags.forEach(tag => {
-                const timestamp = parseInt(tag.textContent);
-                if (!isNaN(timestamp)) {
-                    const date = new Date(timestamp * 1000);
-                    tag.textContent = date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-                }
-            });
-            
             // Add status color classes
             const statusTags = document.querySelectorAll('.order-status');
             statusTags.forEach(tag => {

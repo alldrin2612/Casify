@@ -58,13 +58,21 @@ def get_user_data():
 
 @app.template_filter('format_datetime')
 def format_datetime(value):
+    if not value:
+        return ""
+    
     if isinstance(value, int):  # If stored as Unix timestamp
         return datetime.utcfromtimestamp(value).strftime('%Y-%m-%d %H:%M:%S')
     elif isinstance(value, str):  # If stored as a string
         try:
-            return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            # Try to parse ISO format
+            return datetime.fromisoformat(value.replace('Z', '+00:00')).strftime('%Y-%m-%d %H:%M:%S')
         except ValueError:
-            return value  # Return as is if parsing fails
+            try:
+                # Try to parse ISO format with Z
+                return datetime.strptime(value, '%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d %H:%M:%S')
+            except ValueError:
+                return value  # Return as is if parsing fails
     return value
 
 
@@ -304,13 +312,14 @@ def checkout():
         
         # Create order
         order_data = {
-            'user_id': user_id,
-            'shipping_address': shipping_address,
-            'payment_method': payment_method,
-            'total_price': total_price,
-            'status': 'Delivered',
-            'items': json.dumps(cart_items)
-        }
+                        'user_id': user_id,
+                        'shipping_address': shipping_address,
+                        'payment_method': payment_method,
+                        'total_price': total_price,
+                        'status': 'Delivered',
+                        'items': json.dumps(cart_items),
+                        'created_at': datetime.now().isoformat()  # Add this line
+                    }
         
         order_response = supabase.table('orders').insert(order_data).execute()
         
@@ -347,6 +356,33 @@ def order_confirmation(order_id):
     else:
         flash('Order not found')
         return redirect(url_for('home'))
+
+# Add this function to your Flask app
+@app.route('/admin/fix-order-dates', methods=['GET'])
+def fix_order_dates():
+    if 'user_id' not in session:
+        return jsonify({'error': 'Not authenticated'}), 401
+    
+    # Verify the user is an admin (add your own check)
+    
+    # Get all orders without a valid created_at
+    response = supabase.table('orders').select('*').execute()
+    orders = response.data
+    
+    updates = 0
+    for order in orders:
+        # Check if created_at is missing or malformed
+        if 'created_at' not in order or not order['created_at']:
+            # Update with current time
+            update_response = supabase.table('orders').update({
+                'created_at': datetime.now().isoformat()
+            }).eq('id', order['id']).execute()
+            
+            if update_response.data:
+                updates += 1
+    
+    return jsonify({'success': True, 'orders_updated': updates})
+
 
 # Custom case creation routes
 @app.route('/custom_case', methods=['GET'])
