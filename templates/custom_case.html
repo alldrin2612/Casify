@@ -404,6 +404,204 @@
                 }
             }
         });
+        // Add these functions to your existing JavaScript
+
+function initEnhancedUI() {
+    // Add file input enhancements
+    const fileInput = document.getElementById('image-upload');
+    const fileLabel = document.querySelector('.file-input-label');
+    
+    // Create file upload animation bar
+    const uploadAnimBar = document.createElement('div');
+    uploadAnimBar.className = 'file-upload-animation';
+    fileLabel.appendChild(uploadAnimBar);
+    
+    // Update file input label when file is selected
+    fileInput.addEventListener('change', function() {
+        const fileName = this.files[0] ? this.files[0].name : 'Choose File';
+        const span = fileLabel.querySelector('span');
+        
+        if (this.files[0]) {
+            // Show file name with icon
+            span.innerHTML = `<i class="fas fa-file-image"></i> ${fileName}`;
+            fileLabel.style.borderColor = '#00bfff';
+            fileLabel.style.borderStyle = 'solid';
+        } else {
+            span.innerHTML = 'Choose File';
+            fileLabel.style.borderColor = '#ccc';
+            fileLabel.style.borderStyle = 'dashed';
+        }
+    });
+    
+    // Add preview container animation
+    const previewContainer = document.querySelector('.preview-container');
+    const previewAnim = document.createElement('div');
+    previewAnim.className = 'preview-animation';
+    previewContainer.appendChild(previewAnim);
+    
+    // Enhance buttons with hover effects
+    enhanceButtons();
+}
+
+function enhanceButtons() {
+    // Add hover effect to Generate Design button
+    const generateBtn = document.querySelector('button[onclick="generateAIImage()"]');
+    const uploadBtn = document.querySelector('button[onclick="uploadImage()"]');
+    
+    // Make buttons more interactive with icons
+    generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Design';
+    uploadBtn.innerHTML = '<i class="fas fa-eye"></i> Preview Design';
+}
+
+// Enhanced version of uploadImage function
+function uploadImage() {
+    const fileInput = document.getElementById('image-upload');
+    const file = fileInput.files[0];
+    const fileLabel = document.querySelector('.file-input-label');
+    const uploadBtn = document.querySelector('button[onclick="uploadImage()"]');
+    
+    if (!file) {
+        showNotification('Please select an image file', 'error');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    // Show loading animations
+    uploadBtn.classList.add('loading');
+    uploadBtn.innerHTML = '<div class="loading-spinner"></div> Uploading...';
+    fileLabel.classList.add('uploading');
+    
+    // Show loading state in preview
+    const previewImg = document.getElementById('custom-case-preview');
+    const previewAnim = document.querySelector('.preview-animation');
+    previewImg.src = "{{ url_for('static', filename='assets/loading.gif') }}";
+    previewAnim.classList.add('active');
+    
+    fetch('{{ url_for("upload_image") }}', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove loading states
+        uploadBtn.classList.remove('loading');
+        uploadBtn.innerHTML = '<i class="fas fa-eye"></i> Preview Design';
+        fileLabel.classList.remove('uploading');
+        previewAnim.classList.remove('active');
+        
+        if (data.success) {
+            previewImg.src = data.image_path;
+            currentImagePath = data.image_path;
+            document.getElementById('add-to-cart-btn').disabled = false;
+            
+            // Add success animation to preview
+            previewContainer.classList.add('success-preview');
+            setTimeout(() => {
+                previewContainer.classList.remove('success-preview');
+            }, 1000);
+            
+            showNotification('Image uploaded successfully!', 'success');
+        } else {
+            if (data.message === 'Please login to upload images') {
+                window.location.href = '{{ url_for("login") }}';
+            } else {
+                showNotification(data.message, 'error');
+                previewImg.src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+            }
+        }
+    })
+    .catch(error => {
+        // Remove loading states
+        uploadBtn.classList.remove('loading');
+        uploadBtn.innerHTML = '<i class="fas fa-eye"></i> Preview Design';
+        fileLabel.classList.remove('uploading');
+        previewAnim.classList.remove('active');
+        
+        console.error('Error:', error);
+        showNotification('Upload failed. Please try again.', 'error');
+        previewImg.src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+    });
+}
+
+// Enhanced version of generateAIImage function
+function generateAIImage() {
+    const prompt = document.getElementById('ai-description').value;
+    const generateBtn = document.querySelector('button[onclick="generateAIImage()"]');
+    
+    if (!prompt) {
+        showNotification('Please enter a description for your design', 'error');
+        return;
+    }
+    
+    // Show loading animations
+    generateBtn.classList.add('loading');
+    generateBtn.innerHTML = '<div class="loading-spinner"></div> Generating...';
+    
+    // Show loading state in preview
+    const previewImg = document.getElementById('custom-case-preview');
+    const previewAnim = document.querySelector('.preview-animation');
+    previewImg.classList.add('preview-loading');
+    previewImg.src = "{{ url_for('static', filename='assets/loading.gif') }}";
+    previewAnim.classList.add('active');
+    
+    fetch('{{ url_for("generate_ai_image") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt: prompt })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Remove loading states
+        generateBtn.classList.remove('loading');
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Design';
+        previewImg.classList.remove('preview-loading');
+        previewAnim.classList.remove('active');
+        
+        if (data.success) {
+            previewImg.src = data.image_path;
+            currentImagePath = data.image_path;
+            document.getElementById('add-to-cart-btn').disabled = false;
+            
+            // Add success animation
+            const previewContainer = document.querySelector('.preview-container');
+            previewContainer.style.animation = 'pulse 0.5s';
+            setTimeout(() => {
+                previewContainer.style.animation = '';
+            }, 500);
+            
+            showNotification('Design generated successfully!', 'success');
+        } else {
+            if (data.message === 'Please login to generate images') {
+                window.location.href = '{{ url_for("login") }}';
+            } else {
+                showNotification(data.message, 'error');
+                previewImg.src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+            }
+        }
+    })
+    .catch(error => {
+        // Remove loading states
+        generateBtn.classList.remove('loading');
+        generateBtn.innerHTML = '<i class="fas fa-magic"></i> Generate Design';
+        previewImg.classList.remove('preview-loading');
+        previewAnim.classList.remove('active');
+        
+        console.error('Error:', error);
+        previewImg.src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+        showNotification('Generation failed. Please try again.', 'error');
+    });
+}
+
+// Initialize the enhanced UI when document is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    initEnhancedUI();
+    
+    // Add the existing event listeners and other code...
+});
     </script>
 </body>
 </html>

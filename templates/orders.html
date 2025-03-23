@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Past Orders - Casify</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/orders-style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
     <header>
@@ -14,7 +15,7 @@
         </div>
         <nav>
             <ul>
-                <li><a href="{{ url_for('view_cart') }}"><img src="{{ url_for('static', filename='assets/cart-icon.png') }}" alt="Cart"></a></li>
+                <li><a href="{{ url_for('view_cart') }}"><i class="fas fa-shopping-cart"></i></a></li>
                 <li><a href="{{ url_for('home') }}">Home</a></li>
                 <li><a href="{{ url_for('custom_case') }}">Create Your Own Case</a></li>
                 {% if user %}

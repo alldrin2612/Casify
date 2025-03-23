@@ -72,14 +72,16 @@
         <h1>Your Shopping Cart</h1>
         
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                <div class="flash-messages">
-                    {% for message in messages %}
+        {% if messages %}
+            <div class="flash-messages">
+                {% for message in messages %}
+                    {% if message != "Login successful!" %}
                         <p class="flash-message">{{ message }}</p>
-                    {% endfor %}
-                </div>
-            {% endif %}
-        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
         
         <div class="cart-container">
             {% if cart_items|length == 0 %}

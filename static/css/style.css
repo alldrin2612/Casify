@@ -60,6 +60,22 @@ nav ul li a {
     color: #333;
     font-size: 20px;
     transition: color 0.3s;
+    position: relative; /* Add this to make the pseudo-element positioning work */
+}
+
+nav ul li a:after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    background: #00bfff;
+    left: 0;
+    bottom: -5px;
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover:after {
+    width: 100%;
 }
 
 nav ul li a:hover {
@@ -397,13 +413,34 @@ img[src$="case6.png"]:hover {
 
 /* Footer */
 footer {
-    padding: 20px;
+    padding: 25px;
     background: #333;
     color: #fff;
     text-align: center;
-    position: sticky;
-    bottom: 0;
-    width: 100%;
+    margin-top: 60px;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    max-width: 1200px;
+    margin: 0 auto;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Remove any potential space above footer */
+body {
+    padding-bottom: 60px; /* Space for the fixed footer */
+    margin: 0; /* Ensure body has no margin */
+}
+
+/* Ensure there's no gap in any parent containers */
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
 
 /* Fade-in Animation */
