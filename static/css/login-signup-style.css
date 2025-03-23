@@ -7,7 +7,7 @@
 }
 
 body {
-    background-color: #a8e0ff;
+    background-image: radial-gradient(circle at center, #ffffff7b, rgba(124, 255, 253, 0.498), #60ffea78);
     color: #333;
     min-height: 100vh;
     display: flex;

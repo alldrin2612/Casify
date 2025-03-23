@@ -14,7 +14,7 @@ html, body {
 }
 
 body {
-    background-color: #f0f8ff;
+    background-image: radial-gradient(circle at center, #ffffff7b, rgba(124, 255, 253, 0.498), #60ffea78);
     color: #333;
     line-height: 1.6;
     display: flex;
