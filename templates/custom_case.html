@@ -112,20 +112,26 @@
     <script>
       let currentImagePath = null;
 
-function uploadImage() {
+      function uploadImage() {
     const fileInput = document.getElementById('image-upload');
     const file = fileInput.files[0];
+    const fileInputLabel = document.querySelector('.file-input-label');
     
     if (!file) {
         showNotification('Please select an image file', 'error');
+        fileInputLabel.querySelector('span').textContent = 'Choose File';
         return;
     }
+    
+    // Update the label to show the selected file name
+    fileInputLabel.querySelector('span').textContent = file.name;
     
     const formData = new FormData();
     formData.append('file', file);
     
     // Show loading state
     document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/loading.gif') }}";
+    fileInputLabel.classList.add('uploading');
     
     fetch('{{ url_for("upload_image") }}', {
         method: 'POST',
@@ -133,6 +139,9 @@ function uploadImage() {
     })
     .then(response => response.json())
     .then(data => {
+        // Remove uploading class
+        fileInputLabel.classList.remove('uploading');
+        
         if (data.success) {
             document.getElementById('custom-case-preview').src = data.image_path;
             currentImagePath = data.image_path;
@@ -144,15 +153,34 @@ function uploadImage() {
             } else {
                 showNotification(data.message, 'error');
                 document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+                // Reset file input label
+                fileInputLabel.querySelector('span').textContent = 'Choose File';
             }
         }
     })
     .catch(error => {
+        // Remove uploading class
+        fileInputLabel.classList.remove('uploading');
+        
         console.error('Error:', error);
         showNotification('Upload failed. Please try again.', 'error');
         document.getElementById('custom-case-preview').src = "{{ url_for('static', filename='assets/templatewhite.png') }}";
+        // Reset file input label
+        fileInputLabel.querySelector('span').textContent = 'Choose File';
     });
 }
+
+// Add event listener to file input to update label when a file is selected
+document.getElementById('image-upload').addEventListener('change', function() {
+    const fileInputLabel = document.querySelector('.file-input-label');
+    const file = this.files[0];
+    
+    if (file) {
+        fileInputLabel.querySelector('span').textContent = file.name;
+    } else {
+        fileInputLabel.querySelector('span').textContent = 'Choose File';
+    }
+});
 
 function generateAIImage() {
     const prompt = document.getElementById('ai-description').value;
