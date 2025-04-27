@@ -30,6 +30,12 @@ Casify is a modern e-commerce platform specializing in custom phone cases. Users
   - Order status tracking
   - "Buy Again" functionality
 
+- **AI Assistance**
+  - Casper, the AI assistant powered by Google Gemini
+  - Design suggestions and creative ideas
+  - Conversational support for customers
+  - Phone case customization guidance
+
 ## Technologies Used
 
 - **Frontend**
@@ -45,7 +51,7 @@ Casify is a modern e-commerce platform specializing in custom phone cases. Users
 
 - **APIs**
   - Hugging Face API (AI Image Generation)
-  - Hugging Face API (Chat Bot Casper)
+  - Google Gemini AI (Chat Bot Casper)
 
 ## Prerequisites
 
@@ -80,6 +86,7 @@ pip install -r requirements.txt
 SUPABASE_URL=your_supabase_url
 SUPABASE_KEY=your_supabase_key
 HF_API_KEY=your_huggingface_api_key
+GOOGLE_API_KEY=your_google_api_key
 ```
 
 ## Running the Application
@@ -110,6 +117,7 @@ python app.py
    - Either upload an image or use AI generation
    - Customize your design
    - Add to cart when satisfied
+   - Chat with Casper, our AI assistant, for design ideas and inspiration
 
 4. **Checkout Process**
    - Review items in cart

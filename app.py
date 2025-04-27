@@ -11,7 +11,7 @@ from dotenv import load_dotenv
 from datetime import datetime
 import time
 import requests
-
+import google.generativeai as genai  # Import Google's Generative AI library  
 
 # Initialize Flask app
 app = Flask(__name__)
@@ -667,7 +667,7 @@ def chat():
         user = get_user_data()
         user_name = user['first_name'] if user else "there"
         
-        # Call Hugging Face API for the assistant response
+        # Call Google's Generative AI API for the assistant response
         response = get_assistant_response(user_message, user_name)
         
         return jsonify({
@@ -684,106 +684,112 @@ def chat():
 
 def get_assistant_response(user_message, user_name):
     try:
-        # Hugging Face API endpoint for an assistant model
-        API_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.2"
-        headers = {"Authorization": f"Bearer {os.environ.get('HF_API_KEY')}"}
+        # Check if the message is a simple greeting
+        greeting_patterns = [
+            r'^hi$', r'^hello$', r'^hey$', r'^hi there$', r'^hello there$', 
+            r'^howdy$', r'^sup$', r'^what\'s up$', r'^hiya$'
+        ]
         
-        # Create a prompt in the format expected by the model - maintaining Casper but making him more versatile
-        prompt = f"""
-<s>[INST] You are Casper, a smart and creative AI assistant who provides concise, thoughtful responses.
-Instructions:
-1. Keep your responses brief and to the point (typically 1-3 sentences).
-2. Be creative and thoughtful in your answers.
-3. Don't use unnecessary preambles or closings.
-4. Provide direct, helpful information with a friendly tone.
-5. If you don't know something, briefly acknowledge it rather than making up information.
-6. When appropriate, use clever analogies or examples to explain complex concepts simply.
-7. Balance brevity with helpfulness - prioritize quality information over wordiness.
+        # If it's just a greeting, respond directly without calling the API
+        if any(re.match(pattern, user_message.lower().strip()) for pattern in greeting_patterns):
+            return f"Hi {user_name}! How can I help with your phone case design today?"
+            
+        # Configure the Gemini API
+        genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
+        
+        # Create a focused prompt for the assistant
+        prompt = f"""You are Casper, a specialized AI assistant for Casify, a custom phone case company.
+Your expertise is in phone case design ideas and creative suggestions.
 
-User query from {user_name}: {user_message} [/INST]
-"""
+Core abilities:
+- Suggesting creative phone case designs and patterns
+- Offering color scheme and aesthetic advice
+- Helping with AI image generation prompts
+- Answering customer service questions
+- Friendly conversation
+
+Always be concise (1-3 sentences), knowledgeable about design trends, and focus on visual appeal.
+Avoid unnecessary greetings or closings.
+
+{user_name} asks: {user_message}
+
+Your brief, helpful response:"""
         
-        # Make request to Hugging Face API with parameters optimized for concise but smart responses
-        response = requests.post(
-            API_URL,
-            headers=headers,
-            json={
-                "inputs": prompt, 
-                "parameters": {
-                    "max_new_tokens": 150,  # Limited for conciseness but enough for smart responses
-                    "temperature": 0.65,    # Balanced for creativity while staying focused
-                    "top_p": 0.88,          # Slightly diverse token selection
-                    "do_sample": True,      # Enable sampling for natural responses
-                    "repetition_penalty": 1.15  # Stronger discouragement of repetitive text
-                }
-            }
-        )
+        # Initialize the model with the correct model name for the current API version
+        # Try different model formats based on API version
+        try:
+            # Try the newer format first
+            model = genai.GenerativeModel('models/gemini-pro')
+            
+            # Generate a response 
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=150,
+                    top_p=0.9,
+                )
+            )
+        except Exception as model_error:
+            print(f"First model attempt failed: {model_error}, trying alternate model name")
+            # Try the alternative format
+            model = genai.GenerativeModel('gemini-1.5-pro')
+            
+            # Generate a response 
+            response = model.generate_content(
+                prompt,
+                generation_config=genai.types.GenerationConfig(
+                    temperature=0.7,
+                    max_output_tokens=150,
+                    top_p=0.9,
+                )
+            )
         
-        # Check if the request was successful
-        if response.status_code != 200:
-            print(f"Error from Hugging Face API: {response.text}")
-            return "Connection issue. Try again soon."
+        # Extract the response text
+        assistant_response = response.text.strip()
         
-        # Parse the response
-        result = response.json()
-        
-        # Extract the model's response from the result
-        assistant_response = ""
-        if isinstance(result, list) and len(result) > 0:
-            if isinstance(result[0], dict) and "generated_text" in result[0]:
-                full_text = result[0]["generated_text"]
-                inst_end = full_text.find("[/INST]")
-                if inst_end != -1:
-                    assistant_response = full_text[inst_end + 7:].strip()
-                    if assistant_response.endswith("</s>"):
-                        assistant_response = assistant_response[:-4].strip()
-            else:
-                full_text = str(result[0])
-                inst_end = full_text.find("[/INST]")
-                if inst_end != -1:
-                    assistant_response = full_text[inst_end + 7:].strip()
-                    if assistant_response.endswith("</s>"):
-                        assistant_response = assistant_response[:-4].strip()
-        elif isinstance(result, dict) and "generated_text" in result:
-            full_text = result["generated_text"]
-            inst_end = full_text.find("[/INST]")
-            if inst_end != -1:
-                assistant_response = full_text[inst_end + 7:].strip()
-                if assistant_response.endswith("</s>"):
-                    assistant_response = assistant_response[:-4].strip()
-        
-        # Post-process to ensure conciseness - trim lengthy responses
+        # Process for conciseness
         if assistant_response:
-            # Split into sentences and limit if necessary
-            sentences = re.split(r'(?<=[.!?])\s+', assistant_response)
-            if len(sentences) > 3:
-                assistant_response = ' '.join(sentences[:3])
+            # Remove common bot-like openings
+            assistant_response = re.sub(r'^(Sure!|I\'d be happy to help!|Hello!|Hi there!|Certainly!|Of course!)\s*', '', assistant_response)
+            assistant_response = re.sub(r'^(As Casper,|As an AI assistant,|As your assistant,)\s*', '', assistant_response)
             
-            # Remove any common closing phrases
-            closing_phrases = [
-                "hope that helps",
-                "let me know if you need more information",
-                "feel free to ask",
-                "is there anything else"
+            # Remove closing phrases
+            closing_patterns = [
+                r'(Let me know if you need anything else!)',
+                r'(Is there anything else you\'d like to know\?)',
+                r'(How does that sound\?)',
+                r'(Do you have any other questions\?)',
+                r'(Feel free to ask if you need more ideas!)',
+                r'(Hope that helps!)'
             ]
+            for pattern in closing_patterns:
+                assistant_response = re.sub(pattern, '', assistant_response)
             
-            for phrase in closing_phrases:
-                assistant_response = re.sub(f"(?i){phrase}.*", "", assistant_response)
-                
-            # Trim any extra whitespace
+            # Final cleanup
             assistant_response = assistant_response.strip()
             
-            # If empty after cleaning, provide fallback
+            # Ensure it's not empty after cleaning
             if not assistant_response:
-                return "I can help with that succinctly."
-                
-            return assistant_response
+                return "Try a geometric pattern with your favorite colors overlaid on a subtle gradient background. This works great for custom cases!"
+        else:
+            return "For a striking case design, try abstract shapes in contrasting colors or a favorite photo with an artistic filter applied."
         
-        return "I'll help with that briefly."
+        return assistant_response
     
     except Exception as e:
+        error_message = str(e).lower()
         print(f"Error getting assistant response: {e}")
-        return "Technical issue. Please try again."
-    
+        
+        # Handle different error types based on error message content
+        if "quota" in error_message or "rate" in error_message or "limit" in error_message:
+            return "I'm thinking about your design question. For custom cases, vibrant colors and personal photos usually work best. What style interests you?"
+        elif "authentication" in error_message or "api key" in error_message:
+            return "I'm currently offline for maintenance. For a great custom case, try uploading a high-contrast photo or a vibrant pattern with your favorite colors."
+        elif "prompt" in error_message or "content" in error_message or "model" in error_message:
+            return "I'm having a creative moment. Try a minimalist design with bold, contrasting colors or a favorite photo with an artistic filter."
+        else:
+            return "I'm having a moment of design inspiration. Consider using abstract patterns or nature photography for your custom case."
+
 if __name__ == '__main__':
     app.run(debug=True)
