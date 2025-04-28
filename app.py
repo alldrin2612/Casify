@@ -690,14 +690,21 @@ def get_assistant_response(user_message, user_name):
             r'^howdy$', r'^sup$', r'^what\'s up$', r'^hiya$'
         ]
         
-        # If it's just a greeting, respond directly without calling the API
+        # If it's just a greeting, use a dynamic greeting response
         if any(re.match(pattern, user_message.lower().strip()) for pattern in greeting_patterns):
-            return f"Hi {user_name}! How can I help with your phone case design today?"
+            greetings = [
+                f"Hi {user_name}! Ready to create an amazing phone case design?",
+                f"Hello {user_name}! Let's make your perfect phone case today!",
+                f"Hey {user_name}! Excited to help with your custom case design!",
+                f"Welcome {user_name}! What kind of phone case design are you looking for?",
+                f"Hi {user_name}! Let's bring your phone case ideas to life!"
+            ]
+            return secrets.choice(greetings)
             
         # Configure the Gemini API
         genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
         
-        # Create a focused prompt for the assistant
+        # Create a focused prompt for the assistant with added randomization instruction
         prompt = f"""You are Casper, a specialized AI assistant for Casify, a custom phone case company.
 Your expertise is in phone case design ideas and creative suggestions.
 
@@ -708,40 +715,42 @@ Core abilities:
 - Answering customer service questions
 - Friendly conversation
 
-Always be concise (1-3 sentences), knowledgeable about design trends, and focus on visual appeal.
-Avoid unnecessary greetings or closings.
+Important instructions:
+- Always be concise (1-3 sentences)
+- Be knowledgeable about current design trends
+- Focus on visual appeal
+- Avoid unnecessary greetings or closings
+- IMPORTANT: Each response should be unique and different from common templates
+- Use specific examples and creative combinations in your suggestions
 
 {user_name} asks: {user_message}
 
-Your brief, helpful response:"""
+Your brief, creative response:"""
         
         # Initialize the model with the correct model name for the current API version
-        # Try different model formats based on API version
         try:
             # Try the newer format first
             model = genai.GenerativeModel('models/gemini-pro')
             
-            # Generate a response 
+            # Generate a response with increased temperature for more variety
             response = model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
-                    temperature=0.7,
+                    temperature=0.9,  # Increased for more variety
                     max_output_tokens=150,
-                    top_p=0.9,
+                    top_p=0.95,
                 )
             )
         except Exception as model_error:
             print(f"First model attempt failed: {model_error}, trying alternate model name")
-            # Try the alternative format
             model = genai.GenerativeModel('gemini-1.5-pro')
             
-            # Generate a response 
             response = model.generate_content(
                 prompt,
                 generation_config=genai.types.GenerationConfig(
-                    temperature=0.7,
+                    temperature=0.9,
                     max_output_tokens=150,
-                    top_p=0.9,
+                    top_p=0.95,
                 )
             )
         
@@ -769,11 +778,26 @@ Your brief, helpful response:"""
             # Final cleanup
             assistant_response = assistant_response.strip()
             
-            # Ensure it's not empty after cleaning
+            # Dynamic fallback responses if empty after cleaning
             if not assistant_response:
-                return "Try a geometric pattern with your favorite colors overlaid on a subtle gradient background. This works great for custom cases!"
+                fallbacks = [
+                    "Consider a mandala pattern with metallic accents on a matte background - it's trending right now!",
+                    "How about a watercolor splash design with your favorite quote overlaid in a modern font?",
+                    "Try a minimalist line art design with a pop of your signature color!",
+                    "A marble effect with gold or rose gold veining could give your case a luxe look.",
+                    "Blend urban photography with abstract elements for a unique, personal statement."
+                ]
+                return secrets.choice(fallbacks)
         else:
-            return "For a striking case design, try abstract shapes in contrasting colors or a favorite photo with an artistic filter applied."
+            # Dynamic responses for empty API results
+            empty_responses = [
+                "Transform your case with a cosmic galaxy design featuring shooting stars and nebulas.",
+                "Mix geometric shapes with organic patterns for a contemporary artistic look.",
+                "Layer transparent elements with bold colors for a modern, dimensional effect.",
+                "Create a collage of your favorite memories with an artistic filter overlay.",
+                "Try a Japanese-inspired wave pattern with a modern color palette."
+            ]
+            return secrets.choice(empty_responses)
         
         return assistant_response
     
@@ -781,15 +805,37 @@ Your brief, helpful response:"""
         error_message = str(e).lower()
         print(f"Error getting assistant response: {e}")
         
-        # Handle different error types based on error message content
+        # Dynamic error responses based on error type
+        quota_responses = [
+            "For a unique case design, try combining your favorite photo with geometric overlays.",
+            "Consider a gradient mesh pattern with your personal color palette.",
+            "How about a nature-inspired design with modern abstract elements?",
+            "Mix typography and minimalist icons for a personalized statement piece.",
+            "Create depth with layered patterns in complementary colors."
+        ]
+        
+        auth_responses = [
+            "While I'm updating, why not explore a vintage botanical print with modern colors?",
+            "Consider a terrazzo pattern with your favorite color scheme.",
+            "Try mixing photography with hand-drawn elements for a unique look.",
+            "A minimalist cityscape silhouette could make a striking case design.",
+            "Experiment with abstract brush strokes in bold, contrasting colors."
+        ]
+        
+        general_responses = [
+            "Blend sacred geometry with modern art for a unique phone case.",
+            "Try a custom monogram with intricate pattern work around it.",
+            "Create a topographic map design with metallic highlights.",
+            "Mix pixel art with smooth gradients for a contemporary look.",
+            "Layer transparent shapes with solid colors for a 3D effect."
+        ]
+        
         if "quota" in error_message or "rate" in error_message or "limit" in error_message:
-            return "I'm thinking about your design question. For custom cases, vibrant colors and personal photos usually work best. What style interests you?"
+            return secrets.choice(quota_responses)
         elif "authentication" in error_message or "api key" in error_message:
-            return "I'm currently offline for maintenance. For a great custom case, try uploading a high-contrast photo or a vibrant pattern with your favorite colors."
-        elif "prompt" in error_message or "content" in error_message or "model" in error_message:
-            return "I'm having a creative moment. Try a minimalist design with bold, contrasting colors or a favorite photo with an artistic filter."
+            return secrets.choice(auth_responses)
         else:
-            return "I'm having a moment of design inspiration. Consider using abstract patterns or nature photography for your custom case."
+            return secrets.choice(general_responses)
 
 if __name__ == '__main__':
     app.run(debug=True)
